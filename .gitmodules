@@ -1,0 +1,3 @@
+[submodule "MCW-Big-data-analytics-and-visualization"]
+	path = MCW-Big-data-analytics-and-visualization
+	url = git@github.com:microsoft/MTC_IL_WORKSHOP_Big_data_analytics_and_visualization.git
