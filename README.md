@@ -13,6 +13,7 @@ c. Security in Azure Data Lake
 d.  Labs
  
 Labs:
+-----
  
 1. Build ETL with Azure Data Factory.  Load the data to ADLS v2.
  
