@@ -9,7 +9,7 @@ Before the hands-on lab setup guide
 </div>
 
 <div class="MCWHeader3">
-November 2021
+November 2022
 </div>
 
 Information in this document, including URL and other Internet Web site references, is subject to change without notice. Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places, and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, e-mail address, logo, person, place or event is intended or should be inferred. Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.
@@ -44,7 +44,7 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
 
    - Trial subscriptions will not work.
 
-2. If you are not a Service Administrator or Co-administrator for the Azure subscription, or if you are running the lab in a hosted environment, you will need to install [Visual Studio 2019 Community](https://visualstudio.microsoft.com/downloads/) with the **ASP.NET and web development** and **Azure development** workloads.
+2. If you are not a Service Administrator or Co-administrator for the Azure subscription, or if you are running the lab in a hosted environment, you will need to install [Visual Studio 2022 Community](https://visualstudio.microsoft.com/downloads/) with the **ASP.NET and web development** and **Azure development** workloads.
 
 ## Before the hands-on lab
 
@@ -100,64 +100,4 @@ Power BI desktop is required to connect to your Azure Databricks environment whe
 
 1. Download and install [Power BI Desktop](https://powerbi.microsoft.com/desktop/).
 
-### Task 4: (Optional) Provision a VM to install the Integration Runtime On
-
-An integration runtime agent for Azure Data Factory will need to be installed on your hardware for the hands-on lab. Since you will need to provide your user credentials, we suggest you provision an Azure VM to act as your "on-premises" hardware.
-
-1. In the [Azure Portal](https://portal.azure.com) (<https://portal.azure.com>), select **Create a resource** within the portal menu.
-
-   ![The Create a resource item is selected from the Azure portal page](media/azure-portal-create-resource.png 'Create Resource')
-
-2. Select **Windows Server 2019 Datacenter** from Azure Marketplace.
-
-   ![Selecting the Windows Server 2019 Datacenter VM image from Azure Marketplace.](media/windows-server-2016-for-ir.png "Choosing a marketplace VM image to host the IR")
-
-3. On the **Create a virtual machine** page, specify the following parameters:
-
-   - **Subscription**: Provide the subscription you have been using for this lab.
-
-   - **Resource group**: Provide your resource group.
-
-   - **Virtual machine name**: Provide something descriptive.
-
-   - **Region**: Provide the same location as your ADF instance.
-
-   - **Availability options**: No infrastructure redundancy required
-
-   - **Image**: Windows Server 2016 Datacenter - Gen2
-
-   - **Azure Spot instance**: Unselected
-
-   - **Size**: Standard_D2s_v3
-
-   - **Username**: demouser
-
-   - **Password/Confirm password**: Password.1!!
-
-   - **Public inbound ports**: Allow selected ports
-
-   - **Select inbound ports**: RDP (3389)
-
-   - **Would you like to use an existing Windows Server license?** No
-
-   ![Setting the configuration details for the Windows Server 2016 integration runtime virtual machine.](media/ir-vm-config.PNG "Providing VM configuration information prior to creating it")
-
-4. select **Review + create** to proceed.
-
-5. Select **Create** on the validation page to finish and start provisioning your VM. When the deployment is complete **(1)**, select **Go to resource (2)** to navigate to your VM.
-
-   ![Deployment complete dialog is shown. Go to resource button is highlighted.](media/vm-deployment-complete.png 'Deployment Complete')
-
-6. Select **Connect** from the upper left-hand corner of the page. Then, select **RDP**. Finally, select **Download RDP File**.
-
-   ![Download the RDP connection file for the virtual machine from Azure portal.](media/rdp-into-ir-vm.PNG "Downloading an RDP file to access the VM")
-
-7. Open the RDP file. Enter the username and password you configured earlier. Disregard any certificate issues that RDP presents.
-
-   ![Entering virtual machine credentials to access it.](media/vm-rdp-credentials.PNG "Providing user credentials to access the VM over RDP")
-
-8. When you access the VM, **Server Manager** should open automatically. If not, open it manually using the search bar. Then, locate **Local Server**. Select **IE Enhanced Security Configuration**. Then, disable this feature for Administrators.
-
-   ![Accessing the Local Server tab within Server Manager. Disabling IE Enhanced Security Configuration for administrative users to permit access to online resources.](media/disabled-ie-enhanced-security.PNG "Disabling IE Enhanced Security Configuration to access websites")
-
-You should follow all these steps provided _before_ attending the Hands-on lab.
+Note: You should follow all these steps provided _before_ attending the Hands-on lab.
