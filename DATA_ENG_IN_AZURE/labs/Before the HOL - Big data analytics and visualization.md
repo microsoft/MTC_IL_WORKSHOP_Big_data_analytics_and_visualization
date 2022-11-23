@@ -31,8 +31,10 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
   - [Before the hands-on lab](#before-the-hands-on-lab)
     - [Task 1: Create an Azure resource group using the Azure Portal](#task-1-create-an-azure-resource-group-using-the-azure-portal)
     - [Task 2: Deploy Azure resources](#task-2-deploy-azure-resources)
-    - [Task 3: Download and install Power BI Desktop](#task-3-download-and-install-power-bi-desktop)
-    - [Task 4: (Optional) Provision a VM to install the Integration Runtime On](#task-4-optional-provision-a-vm-to-install-the-integration-runtime-on)
+    - [Task 3: Configure Databricks access to Azure Data Lake Storage](#task-4-configure-databricks-access-to-azure-data-lake-storage)
+    - [Task 4: Download and install Power BI Desktop](#task-3-download-and-install-power-bi-desktop)
+    
+   
 
 <!-- /TOC -->
 
@@ -94,7 +96,13 @@ The below ARM template deploys several Azure resources for the labs, including A
 
 3. Select the **Review + create** button, then **Create**. The provisioning of your deployment resources will take approximately 5 minutes.
 
-### Task 3: Download and install Power BI Desktop
+
+### Task 3: Configure Databricks Access To Azure Data Lake Storage
+
+TODO 
+
+
+### Task 4: Download and install Power BI Desktop
 
 Power BI desktop is required to connect to your Azure Databricks environment when creating the Power BI dashboard.
 
