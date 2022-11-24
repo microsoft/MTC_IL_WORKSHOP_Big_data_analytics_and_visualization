@@ -99,7 +99,15 @@ The below ARM template deploys several Azure resources for the labs, including A
 
 ### Task 3: Configure Databricks Access To Azure Data Lake Storage
 
-TODO 
+1. [In Azure Active Directory create Service principal with a secret in Azure Key Vault](https://learn.microsoft.com/en-us/azure/purview/create-service-principal-azure)
+   Put down the Azure Active directory *Tenant ID*, *Application ID*, *Secret ID* we will need it later.
+
+2. [Define Databricks secrets scope pointing to the previsously created secret in Azure Key Vault](https://learn.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#create-an-azure-key-vault-backed-secret-scope-using-the-ui). 
+Put down the secret scope name we'll need it later.
+
+3. Find the name of your storage account and put it down. 
+
+4.  In the *Setup* notebook in the first cell change the values in < > brackets. 
 
 
 ### Task 4: Download and install Power BI Desktop
