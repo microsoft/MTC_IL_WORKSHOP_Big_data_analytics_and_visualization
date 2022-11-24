@@ -24,4 +24,4 @@ Labs:
  
 4. Data Analytics in Azure Databricks. Running SQL.
  
-5. Reporting with PowerBI. 
+5. Reporting with PowerBI.
