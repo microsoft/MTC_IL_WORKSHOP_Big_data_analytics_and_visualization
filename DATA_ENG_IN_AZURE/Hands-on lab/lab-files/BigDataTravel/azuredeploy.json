@@ -1,0 +1,89 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "siteName": {
+      "type": "string",
+      "defaultValue": "[concat('webapp-', newGuid())]",
+      "minLength": 2,
+      "metadata": {
+        "description": "Web site's host name - must be unique across Azure App Service."
+      }      
+    },
+    "sku": {
+      "type": "string",
+      "defaultValue": "F1",
+      "metadata": {
+        "description": "The SKU of App Service Plan."
+      }
+    },
+    "mlUrl": {
+      "type": "string"
+    },
+    "pat": {
+      "type": "string"
+    },
+    "weatherApiKey": {
+      "type": "string"
+    }
+  },
+
+  "variables": {
+    "appServicePlanName": "[concat('app-service-plan-', parameters('siteName'))]",
+    "location": "[resourceGroup().location]",
+    "gitRepoUrl": "https://github.com/microsoft/MCW-Big-data-and-visualization"
+  },
+
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('appServicePlanName')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "[parameters('sku')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('siteName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+      ],
+      "properties": {
+         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-08-01",
+          "type": "config",
+          "name": "appsettings",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', parameters('siteName'))]"
+          ],
+          "properties": {
+            "mlUrl": "[parameters('mlUrl')]",
+            "weatherApiKey":  "[parameters('weatherApiKey')]",
+            "pat": "[parameters('pat')]"
+          }
+        },
+        {
+          "apiVersion": "2020-06-01",
+          "name": "web",
+          "type": "sourcecontrols",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
+            "[concat('Microsoft.Web/Sites/', parameters('siteName'), '/config/appsettings')]"
+          ],
+          "properties": {
+            "repoUrl": "[variables('gitRepoUrl')]",
+            "branch": "main",
+            "IsManualIntegration": true
+          }
+        }
+      ]
+    }
+  ]
+}

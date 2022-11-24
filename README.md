@@ -11,6 +11,7 @@ b.      Review Azure data services:
 		Azure Databricks
 c. Security in Azure Data Lake
 d.  Labs
+e.
  
 Labs:
 -----

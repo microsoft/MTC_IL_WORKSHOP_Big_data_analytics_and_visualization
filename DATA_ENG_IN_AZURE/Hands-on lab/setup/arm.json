@@ -1,0 +1,80 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "uniqueSuffix": {
+            "type": "String",
+            "metadata": {
+              "description": "Suffix added to all resource names to make them unique."
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "databricksWorkspaceName": "[concat('mcw-bdv-databricks-', parameters('uniqueSuffix'))]",
+        "blobStorageAccountName": "[concat('asastoremcw', parameters('uniqueSuffix'))]",
+		"dataFactoryName": "[concat('adfmcwdatafactory', parameters('uniqueSuffix'))]",
+        "managedResourceGroupName": "[concat('databricks-rg-', variables('databricksWorkspaceName'), '-', uniqueString(variables('databricksWorkspaceName'), resourceGroup().id))]",
+        "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-04-01",
+            "location": "[variables('location')]",
+            "name": "[variables('databricksWorkspaceName')]",
+            "sku": {
+                "name": "premium"
+            },
+            "comments": "Please do not use an existing resource group for ManagedResourceGroupId.",
+            "properties": {
+                "ManagedResourceGroupId": "[variables('managedResourceGroupId')]",
+                "parameters": {}
+            },
+            "type": "Microsoft.Databricks/workspaces",
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "name": "[variables('blobStorageAccountName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_RAGRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+              "encryption": {
+                "services": {
+                  "blob": {
+                    "enabled": true
+                  },
+                  "file": {
+                    "enabled": true
+                  }
+                },
+                "keySource": "Microsoft.Storage"
+              },
+              "supportsHttpsTrafficOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-06-01",
+            "name": "[concat(variables('blobStorageAccountName'), '/default/sparkcontainer')]",
+            "dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('blobStorageAccountName'))]"
+            ]
+        },
+		{
+            "type": "Microsoft.DataFactory/factories",
+            "apiVersion": "2018-06-01",
+            "name": "[variables('dataFactoryName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "repoConfiguration": "[json('null')]",
+                "publicNetworkAccess": "Enabled",
+                "encryption": "[json('null')]"
+            }
+        }
+	]
+}
