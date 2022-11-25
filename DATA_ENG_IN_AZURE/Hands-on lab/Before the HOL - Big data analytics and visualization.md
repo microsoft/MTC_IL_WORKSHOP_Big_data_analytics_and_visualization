@@ -100,14 +100,18 @@ The below ARM template deploys several Azure resources for the labs, including A
 ### Task 3: Configure Databricks Access To Azure Data Lake Storage
 
 1. [In Azure Active Directory create Service principal with a secret in Azure Key Vault](https://learn.microsoft.com/en-us/azure/purview/create-service-principal-azure)
-   Put down the Azure Active directory *Tenant ID*, *Application ID*, *Secret ID* we will need it later.
+   Put down the Azure Active directory *Tenant ID*, *Application ID*, *Secret Desciption* in Key Vault, we will need it later.
 
 2. [Define Databricks secrets scope pointing to the previsously created secret in Azure Key Vault](https://learn.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#create-an-azure-key-vault-backed-secret-scope-using-the-ui). 
 Put down the secret scope name we'll need it later.
+The *DNS Name* and *Resource ID" take from Key Vault's *Properties* in Azure Portal.
 
 3. Find the name of your storage account and put it down. 
 
-4.  In the *Setup* notebook in the first cell change the values in < > brackets. 
+4. Add permissions for Service Principal, you just created, to access the data files in Azure Data Lake Storage. This is done via ACLs (Access Control Lsists). To view / manage ACLs, you right click on the container / folder / file in Azure Storage explorer, and then use the “Manage Access” menu. Once you are in Manage Access dialog, click on *+ Add Principal*, search for your Service Principal name select it, add the reaquired permissions: Read, Write and Execute. Save.
+Currently for existing files / folders, you have to grant desired permissions explicitly. Another very important point is that the Service Principal must also have been granted Read and Execute at the root (the container level), as well as any intermediate folder(s). 
+
+5.  In the *Setup* notebook in the first cell change the values in < > brackets. 
 
 
 ### Task 4: Download and install Power BI Desktop
