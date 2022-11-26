@@ -11,7 +11,7 @@
 # MAGIC 7. Upload those files into FlightsDelays folder.
 # MAGIC 
 # MAGIC 
-# MAGIC #####  Security set up. Update following values in <> brackets before running the notebooks:
+# MAGIC #####  Security set up. Following custom arguments will be set: 
 # MAGIC 1. Storage Account Name
 # MAGIC 2. Databricks secret scope name
 # MAGIC 3. Service Principal Secret Description as it defined in Key Vault
@@ -20,33 +20,58 @@
 
 # COMMAND ----------
 
-service_credential = dbutils.secrets.get(scope="<DataBricks secrets scope name>",key="<Key Desciption in Key Vault>")  #secret scope / secret description in key vault!  
+print ("Starting arguments initialization...")
 
-spark.conf.set("fs.azure.account.auth.type.<storage account name>.dfs.core.windows.net", "OAuth")
-spark.conf.set("fs.azure.account.oauth.provider.type.<storage account name>.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
-spark.conf.set("fs.azure.account.oauth2.client.id.<storage account name>.dfs.core.windows.net", "<Application (client) ID in AAD>") # application (client) id 
-spark.conf.set("fs.azure.account.oauth2.client.secret.<storage account name>.dfs.core.windows.net", service_credential)
-spark.conf.set("fs.azure.account.oauth2.client.endpoint.<storage account name>.dfs.core.windows.net", "https://login.microsoftonline.com/<AAD teanant ID>") # directory (tenant)id
+secret_scope_name = dbutils.widgets.get("SECRET_SCOPE_NAME")
+secret_id = dbutils.widgets.get("SECRET_ID")
+storage_account_name = dbutils.widgets.get("STORAGE_ACCOUNT_NAME")
+sp_application_id = dbutils.widgets.get("SP_APPLICATION_ID")
+tenant_id = dbutils.widgets.get("TENANT_ID")
+container_name = dbutils.widgets.get("CONTAINER_NAME")
+data_folder_name = dbutils.widgets.get("DATA_FOLDER_NAME")
+adls_mount_point_name = dbutils.widgets.get("ADLS_MOUNT_POINT_NAME")
+
+print (f"secret_scope_name = {secret_scope_name}")
+print (f"secret_id = {secret_id}")  
+print (f"storage_account_name = {storage_account_name}")
+print (f"sp_application_id = {sp_application_id}")
+print (f"tenant_id = {tenant_id}")
+print (f"container_name = {container_name}")
+print (f"adls_mount_point_name = {adls_mount_point_name}")
+
+print ("Setting service principal configuration...")
+service_credential = dbutils.secrets.get(scope=f"{secret_scope_name}",key=f"{secret_id}")  #secret scope name / the key is a secret description in key vault!  
+spark.conf.set(f"fs.azure.account.auth.type.{storage_account_name}.dfs.core.windows.net", "OAuth")
+spark.conf.set(f"fs.azure.account.oauth.provider.type.{storage_account_name}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
+spark.conf.set(f"fs.azure.account.oauth2.client.id.{storage_account_name}.dfs.core.windows.net", f"{sp_application_id}") # application (client) id 
+spark.conf.set(f"fs.azure.account.oauth2.client.secret.{storage_account_name}.dfs.core.windows.net", service_credential)
+spark.conf.set(f"fs.azure.account.oauth2.client.endpoint.{storage_account_name}.dfs.core.windows.net", f"https://login.microsoftonline.com/{tenant_id}/oauth2/token") # directory (tenant)id
 
 # COMMAND ----------
 
+print ("list all existing secret scopes in workspace:")
 dbutils.secrets.listScopes()
 
 # COMMAND ----------
 
-dbutils.secrets.list("<secret scope name>")
+#check specific secret scope
+dbutils.secrets.list(f"{secret_scope_name}")
 
 # COMMAND ----------
 
+print ("Mount ADLS...")
 configs = {
   "fs.azure.account.auth.type": "CustomAccessToken",
   "fs.azure.account.custom.token.provider.class":   spark.conf.get("spark.databricks.passthrough.adls.gen2.tokenProviderClassName")
 }
+
+#Important! Change the container name, folder and storage account
 dbutils.fs.mount(
-  source = "abfss://<container name>@a<storage account name>.dfs.core.windows.net/<folder name>",
-  mount_point = "/mnt/<mount name>",
+  source = f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/{data_folder_name}",
+  mount_point = f"/mnt/{adls_mount_point_name}",
   extra_configs = configs)
 
 # COMMAND ----------
 
-dbutils.fs.ls("abfss://<container name>@<storage account name>.dfs.core.windows.net/")
+print("Input data folder content:")
+dbutils.fs.ls(f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/")
