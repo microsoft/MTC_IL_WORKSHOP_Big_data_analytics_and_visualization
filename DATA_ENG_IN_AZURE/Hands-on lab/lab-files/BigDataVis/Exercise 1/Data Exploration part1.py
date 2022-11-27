@@ -32,7 +32,7 @@ dbutils.fs.mount(
 
 # COMMAND ----------
 
-dbutils.fs.ls("/mnt/FlightsDelaysMount_02/FlightsDelays")
+dbutils.fs.ls("/mnt/FlightsDelaysMount_02/")
 
 # COMMAND ----------
 
@@ -150,6 +150,69 @@ display(df)
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC with flights_dep_delays (
+# MAGIC origin_airport,
+# MAGIC dep_total_delays
+# MAGIC ) as ( select originairportname, sum(depdel15) as origindelay15min 
+# MAGIC   from flights_delays
+# MAGIC   group by originairportname
+# MAGIC ) 
+# MAGIC 
+# MAGIC with flights_dest_delays (
+# MAGIC dest_airport,
+# MAGIC dest_total_delays
+# MAGIC ) as ( select destairportname, sum(arrdel15) as arrivaldelay15min 
+# MAGIC   from flights_delays
+# MAGIC   group by destairportname
+# MAGIC ) 
+# MAGIC 
+# MAGIC 
+# MAGIC 
+# MAGIC select origin_airport, dep_total_delays from
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select 
+# MAGIC (
+# MAGIC with flights_dep_delays (
+# MAGIC origin_airport,
+# MAGIC dep_total_delays
+# MAGIC ) as ( select originairportname, sum(depdel15) as origindelay15min 
+# MAGIC   from flights_delays
+# MAGIC   group by originairportname
+# MAGIC ) 
+# MAGIC  select max(dep_total_delays) from flights_dep_delays
+# MAGIC 
+# MAGIC )
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select 
+# MAGIC (
+# MAGIC with flights_dep_delays (
+# MAGIC origin_airport,
+# MAGIC dep_total_delays
+# MAGIC ) as ( select originairportname, sum(depdel15) as origindelay15min 
+# MAGIC   from flights_delays
+# MAGIC   group by originairportname
+# MAGIC ) 
+# MAGIC  select max(dep_total_delays) from flights_dep_delays
+# MAGIC 
+# MAGIC )
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) as doubledel, originairportname from flights_delays
+# MAGIC where depdel15 == 1 and arrdel15 == 1
+# MAGIC group by originairportname
+# MAGIC sort by doubledel desc
+
+# COMMAND ----------
+
+# MAGIC %sql
 # MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv`
 
 # COMMAND ----------
@@ -228,6 +291,206 @@ display(df)
 
 # MAGIC %sql
 # MAGIC select * from flights_with_weather limit 10
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from flights_with_weather
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Create Delta Lake tables with CTAS (Create Table as Select)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC create or replace table flights_with_weather_delta as select * from flights_with_weather
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from flights_with_weather_delta
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC describe extended flights_with_weather_delta
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Note that CTAS doesn't support schema definition (it infers the schema from query results)
+# MAGIC This could be a problem when you create a delta table from CSV or json
+# MAGIC In this case you can create a temp view, define schema for it and then run CTAS
+# MAGIC For example
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC create or replace temp view flights_with_weather_temp_view( 
+# MAGIC year int,
+# MAGIC month int,
+# MAGIC day int,
+# MAGIC time int,
+# MAGIC timezone int,
+# MAGIC skycondition string,
+# MAGIC visibility float,
+# MAGIC weathertype string,
+# MAGIC drybulbfarenheit float,
+# MAGIC drybulbcelsius float,
+# MAGIC wetbulbfarenheit float,
+# MAGIC wetbulbcelsius float,
+# MAGIC dewpointfarenheit float,
+# MAGIC dewpointcelsius float,
+# MAGIC relativehumidity int,
+# MAGIC windspeed int,
+# MAGIC winddirection int,
+# MAGIC valueforwindcharacter int,
+# MAGIC stationpressure float,
+# MAGIC pressuretendency int,
+# MAGIC pressurechange int,
+# MAGIC sealevelpressure float,
+# MAGIC recordtype string,
+# MAGIC hourlyprecip string,
+# MAGIC altimeter float,
+# MAGIC airportcode string,
+# MAGIC displayairportname string,
+# MAGIC latitude float,
+# MAGIC longitude float
+# MAGIC )
+# MAGIC using csv
+# MAGIC options (
+# MAGIC header = "true",
+# MAGIC path = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv"
+# MAGIC )
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC Now run CTAS- create managed table from temp view
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC create or replace table flights_with_weather_delta_from_view as select * from flights_with_weather_temp_view
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC describe extended flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Enriching data with additional meta-data like ingestion time
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC drop table flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC create or replace table flights_with_weather_delta_from_view as select current_timestamp() as ingestiontime, * from flights_with_weather_temp_view
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from flights_with_weather_delta_from_view limit 10
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC drop  view incremental_flights_with_weather_data
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC create temp view incremental_flights_with_weather_data as select *, 1 as dirty_column from flights_with_weather_delta_from_view where airportcode == "SJU"
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC select * from incremental_flights_with_weather_data limit 10
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from incremental_flights_with_weather_data
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC insert into flights_with_weather_delta_from_view (select * from incremental_flights_with_weather_data)
+
+# COMMAND ----------
+
+spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled",  "true")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC insert into flights_with_weather_delta_from_view (select * from incremental_flights_with_weather_data)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %sql select * from flights_with_weather_delta_from_view limit 100
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from flights_with_weather_delta_from_view where airportcode=='SJU'
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC MERGE INTO flights_with_weather_delta_from_view a
+# MAGIC USING incremental_flights_with_weather_data b
+# MAGIC ON a.airportcode = b.airportcode
+# MAGIC WHEN MATCHED THEN
+# MAGIC   UPDATE SET a.dirty_column=10
+# MAGIC WHEN NOT MATCHED THEN INSERT *
+
+# COMMAND ----------
+
+# MAGIC %sql describe extended flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC describe history flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from flights_with_weather_delta_from_view version as of  0
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC restore table flights_with_weather_delta_from_view version as of 0
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC describe history flights_with_weather_delta_from_view
 
 # COMMAND ----------
 
