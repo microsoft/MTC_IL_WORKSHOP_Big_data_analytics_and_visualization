@@ -1,4 +1,18 @@
 # Databricks notebook source
+# MAGIC %md Access ADLS Using SAS token
+
+# COMMAND ----------
+
+spark.conf.set("fs.azure.account.auth.type.asastoremcw303474.dfs.core.windows.net", "SAS")
+spark.conf.set("fs.azure.sas.token.provider.type.asastoremcw303474.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.sas.FixedSASTokenProvider")
+spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "<replace by SAS token>")
+
+# COMMAND ----------
+
+# MAGIC %md Access ADLS Using AAD Service Principal (OAuth 2.0)
+
+# COMMAND ----------
+
 service_credential = dbutils.secrets.get(scope="<DataBricks secrets scope name>",key="<Key Desciption in Key Vault>")  #scope : data-eng-workshop-new-secret_scope-303474 / secret id in key vault!  b456c94f-ed2b-4ded-bcb8-f3502cb2691e
 
 spark.conf.set("fs.azure.account.auth.type.<storage account name>.dfs.core.windows.net", "OAuth")
@@ -27,12 +41,12 @@ configs = {
 }
 dbutils.fs.mount(
   source = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays",
-  mount_point = "/mnt/FlightsDelaysMount_02",
+  mount_point = "/mnt/FlightsDelaysMount_100",
   extra_configs = configs)
 
 # COMMAND ----------
 
-dbutils.fs.ls("/mnt/FlightsDelaysMount_02/")
+dbutils.fs.ls("/mnt/FlightsDelaysMount_100/")
 
 # COMMAND ----------
 
@@ -42,6 +56,11 @@ dbutils.fs.ls("abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/Flight
 
 # MAGIC %sql
 # MAGIC select count(*) from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv`
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from csv.`/mnt/FlightsDelaysMount_00/AirportCodeLocationLookupClean.csv`
 
 # COMMAND ----------
 
@@ -146,29 +165,6 @@ display(df)
 # COMMAND ----------
 
 # MAGIC %sql describe extended  flights_delays
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC with flights_dep_delays (
-# MAGIC origin_airport,
-# MAGIC dep_total_delays
-# MAGIC ) as ( select originairportname, sum(depdel15) as origindelay15min 
-# MAGIC   from flights_delays
-# MAGIC   group by originairportname
-# MAGIC ) 
-# MAGIC 
-# MAGIC with flights_dest_delays (
-# MAGIC dest_airport,
-# MAGIC dest_total_delays
-# MAGIC ) as ( select destairportname, sum(arrdel15) as arrivaldelay15min 
-# MAGIC   from flights_delays
-# MAGIC   group by destairportname
-# MAGIC ) 
-# MAGIC 
-# MAGIC 
-# MAGIC 
-# MAGIC select origin_airport, dep_total_delays from
 
 # COMMAND ----------
 
