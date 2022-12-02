@@ -1,39 +1,11 @@
 # Databricks notebook source
-# MAGIC %md 
-# MAGIC ##### Access ADLS Using SAS token
-# MAGIC 
-# MAGIC Note that the recommended way to access ADLS from Databricks is by using AAD Service Principal and the backed by Azure Key Vault Databricks Secret Scope
+# MAGIC %md Access ADLS Using SAS token
 
 # COMMAND ----------
 
 spark.conf.set("fs.azure.account.auth.type.asastoremcw303474.dfs.core.windows.net", "SAS")
 spark.conf.set("fs.azure.sas.token.provider.type.asastoremcw303474.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.sas.FixedSASTokenProvider")
-spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ##### ABFS protocol
-# MAGIC 
-# MAGIC ABFS protocol (Azure Blob File System) - Azure Blob storage driver for Hadoop required by Spark.
-# MAGIC ABFS is part of Apache Hadoop and is included in many of the commercial distributions of Hadoop. It's a recommended protocol today to use when working with ADLS v2
-# MAGIC 
-# MAGIC The objects in ADLS are represented as URIs with the following URI schema:
-# MAGIC 
-# MAGIC _abfs[s]://container_name@account_name.dfs.core.windows.net/<path>/<path>/<file_name>_
-# MAGIC   
-# MAGIC If you add an 's' at the end (abfss) then the ABFS Hadoop client driver will ALWAYS use Transport Layer Security (TLS) irrespective of the authentication method chosen.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ##### dbutils
-# MAGIC 
-# MAGIC Databricks utilities tool
-# MAGIC 
-# MAGIC You can do many opertations with dbutils, for more details see [dbutils](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/databricks-utils)
-# MAGIC 
-# MAGIC List the content of labs-303474 container:
+spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "<>")
 
 # COMMAND ----------
 
@@ -41,30 +13,13 @@ dbutils.fs.ls("abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/Flight
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ##### Initial data exploration
-# MAGIC 
-# MAGIC Run sparkSQL directly on the files in ADLS 
+# MAGIC %sql
+# MAGIC select count(*) from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv`
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv` limit 10
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv`
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv`
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select count(*) from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv`
+# MAGIC select count(*) from csv.`/mnt/FlightsDelaysMount_00/AirportCodeLocationLookupClean.csv`
 
 # COMMAND ----------
 
@@ -73,29 +28,14 @@ dbutils.fs.ls("abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/Flight
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv` limit 10
+
+# COMMAND ----------
+
 df = spark.read.csv('abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv', header=True)
 display(df)
 
-
-# COMMAND ----------
-
-dbutils.data.summarize(df)
-
-# COMMAND ----------
-
-display(df.groupBy("Month").count())
-
-# COMMAND ----------
-
-display(df.select("Month").distinct().count())
-
-# COMMAND ----------
-
-from pyspark.sql.functions import col
-percentage_nulls_in_DepDel15 = df.filter(col("DepDel15").isNull() ).count() / df.count() * 100
-print (f"{percentage_nulls_in_DepDel15} % null values in DepDel15 column") 
-      
- 
 
 # COMMAND ----------
 
