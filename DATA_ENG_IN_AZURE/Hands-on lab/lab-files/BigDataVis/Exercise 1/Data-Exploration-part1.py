@@ -114,7 +114,7 @@ print (f"{percentage_nulls_in_DepDel15} % null values in DepDel15 column")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ###### Excersise: 
+# MAGIC ##### `Excersise` 
 # MAGIC Run dbutils.summarize for FlightWeatherWithAirportCode file
 # MAGIC 
 # MAGIC Check which columns have null values
@@ -444,9 +444,9 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 # MAGIC   time int,
 # MAGIC   timezone int,
 # MAGIC   skycondition string,
-# MAGIC   visibility float,
+# MAGIC   visibility string,
 # MAGIC   weathertype string,
-# MAGIC   drybulbfarenheit float,
+# MAGIC   drybulbfarenheit string,
 # MAGIC   drybulbcelsius float,
 # MAGIC   wetbulbfarenheit float,
 # MAGIC   wetbulbcelsius float,
@@ -493,7 +493,7 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Excersise 
+# MAGIC ##### `Excersise` 
 # MAGIC 
 # MAGIC Create 2 additional delta tables: **airports_codes_locations_delta** and **flights_delays_delta** using CTAS techique.
 
@@ -505,13 +505,10 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC drop table flights_with_weather_delta_from_view
-
-# COMMAND ----------
-
 # MAGIC %md 
-# MAGIC Using built-in `current_timestamp()` function 
+# MAGIC Using built-in `current_timestamp()` function
+# MAGIC 
+# MAGIC There are many others, more details [databricks built-in functions](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/current_timestamp)
 
 # COMMAND ----------
 
@@ -530,42 +527,29 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC drop  view incremental_flights_with_weather_data
+# MAGIC %md
+# MAGIC Very often there is a need to add data incrementally to the existing tables
+# MAGIC There are few ways to achieve it in Spark by using one of those:
+# MAGIC 1. `INSERT INTO`
+# MAGIC 2. `COPY INTO`
+# MAGIC 3. `MERGE INTO`
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC create temp view incremental_flights_with_weather_data as select *, 1 as dirty_column from flights_with_weather_delta_from_view where airportcode == "SJU"
+# MAGIC %md 
+# MAGIC 
+# MAGIC let's simulate incremental load flow
+# MAGIC first we create a table: `incremental_flights_with_weather_data` which we want to copy incrementally to the original table:`flights_with_weather_delta_from_view`
 
 # COMMAND ----------
 
-# MAGIC %sql 
-# MAGIC select * from incremental_flights_with_weather_data limit 10
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select count(*) from incremental_flights_with_weather_data
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select count(*) from flights_with_weather_delta_from_view
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC insert into flights_with_weather_delta_from_view (select * from incremental_flights_with_weather_data)
-
-# COMMAND ----------
-
-spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled",  "true")
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC insert into flights_with_weather_delta_from_view (select * from incremental_flights_with_weather_data)
+# MAGIC %sql create or replace temp view incremental_flights_with_weather_data as
+# MAGIC select
+# MAGIC   *
+# MAGIC from
+# MAGIC   flights_with_weather_delta_from_view
+# MAGIC where
+# MAGIC   airportcode == "SJU"
 
 # COMMAND ----------
 
@@ -574,26 +558,147 @@ spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled",  "true")
 
 # COMMAND ----------
 
-# MAGIC %sql select * from flights_with_weather_delta_from_view limit 100
+# MAGIC %sql
+# MAGIC insert into
+# MAGIC   flights_with_weather_delta_from_view (
+# MAGIC     select
+# MAGIC       *
+# MAGIC     from
+# MAGIC       incremental_flights_with_weather_data
+# MAGIC   )
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Run the previous `insert into` one more time, you will succeed. This operation **is not idempotent one**.
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select count(*) from flights_with_weather_delta_from_view where airportcode=='SJU'
+# MAGIC select count(*) from flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ##### INSERT INTO vs. COPY INTO
+# MAGIC 
+# MAGIC Important: COPY INTO **is idempotent operation**
+
+# COMMAND ----------
+
+# MAGIC %sql create or replace temp view incremental_flights_with_weather_data_atl as
+# MAGIC select
+# MAGIC  *
+# MAGIC from
+# MAGIC   flights_with_weather_delta_from_view
+# MAGIC where
+# MAGIC   airportcode == "ATL"
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from incremental_flights_with_weather_data_atl
+
+# COMMAND ----------
+
+# MAGIC %sql select count(*) from flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
+# MAGIC %sql create or replace table airports_codes_locations_stg(
+# MAGIC   airportid int,
+# MAGIC   airport string,
+# MAGIC   displayairportname string,
+# MAGIC   latitude double,
+# MAGIC   longitude double
+# MAGIC ) 
+
+# COMMAND ----------
+
+# MAGIC %sql copy into airports_codes_locations_stg
+# MAGIC from
+# MAGIC   "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv" 
+# MAGIC     fileformat = CSV 
+# MAGIC     format_options (
+# MAGIC     "mergeSchema" = "true",
+# MAGIC     "header" = "true",
+# MAGIC     "inferSchema" = "true"
+# MAGIC   ) copy_options ("mergeSchema" = "true")
+
+# COMMAND ----------
+
+# MAGIC %sql select count(*) from airports_codes_locations_stg
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC Run once again the previous `Copy Into`- zero records will be inserted. 
+# MAGIC 
+# MAGIC `COPY INTO` is idempotent operation 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##### MERGE INTO
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC show tables
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC MERGE INTO flights_with_weather_delta_from_view a
-# MAGIC USING incremental_flights_with_weather_data b
+# MAGIC USING incremental_flights_with_weather_data_atl b
 # MAGIC ON a.airportcode = b.airportcode
-# MAGIC WHEN MATCHED THEN
-# MAGIC   UPDATE SET a.dirty_column=10
 # MAGIC WHEN NOT MATCHED THEN INSERT *
 
 # COMMAND ----------
 
-# MAGIC %sql describe extended flights_with_weather_delta_from_view
+# MAGIC %md 
+# MAGIC ##### Delta format
+# MAGIC 
+# MAGIC Let's explore Delta Lake format
+# MAGIC 
+# MAGIC Let's see 
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC create or replace temp view incremental_flights_with_weather_data_temp_view as
+# MAGIC select
+# MAGIC   *,
+# MAGIC   1 as dirty_column
+# MAGIC from
+# MAGIC   flights_with_weather_delta_from_view
+# MAGIC where
+# MAGIC   airportcode == "SJU"
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Note that we changed the schema - the new column `dirty_column` has been added
+# MAGIC 
+# MAGIC That's the one of great Delta features: schema enforcement. 
+# MAGIC The default behaviour is to fail. 
+# MAGIC You can enable the insert by allowing ***schema merge***
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC insert into
+# MAGIC   flights_with_weather_delta_from_view (
+# MAGIC     select
+# MAGIC       *
+# MAGIC     from
+# MAGIC       incremental_flights_with_weather_data_temp_view
+# MAGIC   )
+
+# COMMAND ----------
+
+spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled",  "true")
 
 # COMMAND ----------
 
@@ -619,7 +724,3 @@ spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled",  "true")
 
 # MAGIC %sql 
 # MAGIC describe history flights_with_weather_delta_from_view
-
-# COMMAND ----------
-
-
