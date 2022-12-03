@@ -149,6 +149,9 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 
 # MAGIC %md 
 # MAGIC ##### Create external table
+# MAGIC We create a table in `flights` schema, which we created previously.
+# MAGIC 
+# MAGIC Notice using ***_header_*** option, which allows to define columns names from the header
 
 # COMMAND ----------
 
@@ -163,6 +166,34 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # MAGIC   path = 'abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv',
 # MAGIC   header = "true");
 # MAGIC   
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC show tables
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC describe extended flights_delays_external
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Look at table `Location` property. 
+# MAGIC 
+# MAGIC Where does it point to?
+# MAGIC 
+# MAGIC Pay attention that this table is External and the table format is CSV. Since it's an extrernal table, the location is the original one: the ADLS container.
+# MAGIC 
+# MAGIC Also you can see that there is no history for non-delta tables.
+# MAGIC 
+# MAGIC The history supported by Delta format.
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC describe history flights_delays_external
 
 # COMMAND ----------
 
@@ -202,26 +233,8 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC show tables
-
-# COMMAND ----------
-
 # MAGIC %sql 
-# MAGIC describe extended flights_delays_external
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC Pay attention that this table is `External` and table format is `CSV`
-# MAGIC Since it's extrernal table, its location is the original one and the data is in the original files.
-# MAGIC 
-# MAGIC Also you can see that there is no history for non-delta tables
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC describe history flights_delays_external
+# MAGIC describe table flights_delays_external
 
 # COMMAND ----------
 
@@ -230,7 +243,7 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # MAGIC 
 # MAGIC Since the original data is in CSV format, Spark can not infer precisely the correct fields types.
 # MAGIC 
-# MAGIC The better way is to define the types strictly
+# MAGIC The better way to create table, is to define the types strictly
 
 # COMMAND ----------
 
@@ -263,11 +276,6 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # MAGIC   path = 'abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv',
 # MAGIC   header = "true"
 # MAGIC );
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select * from flights_delays limit 10
 
 # COMMAND ----------
 
@@ -325,78 +333,57 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Let's create other two table with correct field types
+# MAGIC Let's create other two table with explicit field types defintion
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv`
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC -- Task TODO create external table: airports_codes_locations
+# MAGIC %sql -- Task TODO create external table: airports_codes_locations
 # MAGIC create table airports_codes_locations(
-# MAGIC airportid int,
-# MAGIC airport string,
-# MAGIC displayairportname string,
-# MAGIC latitude float,
-# MAGIC longitude float
-# MAGIC )
-# MAGIC using csv
-# MAGIC options (
-# MAGIC header = "true",
-# MAGIC path = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv"
+# MAGIC   airportid int,
+# MAGIC   airport string,
+# MAGIC   displayairportname string,
+# MAGIC   latitude float,
+# MAGIC   longitude float
+# MAGIC ) using csv options (
+# MAGIC   header = "true",
+# MAGIC   path = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv"
 # MAGIC )
 
 # COMMAND ----------
 
-# MAGIC %sql 
-# MAGIC select * from airports_codes_locations limit 10
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv` limit 10
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC create table flights_with_weather( 
-# MAGIC year int,
-# MAGIC month int,
-# MAGIC day int,
-# MAGIC time int,
-# MAGIC timezone int,
-# MAGIC skycondition string,
-# MAGIC visibility float,
-# MAGIC weathertype string,
-# MAGIC drybulbfarenheit float,
-# MAGIC drybulbcelsius float,
-# MAGIC wetbulbfarenheit float,
-# MAGIC wetbulbcelsius float,
-# MAGIC dewpointfarenheit float,
-# MAGIC dewpointcelsius float,
-# MAGIC relativehumidity int,
-# MAGIC windspeed int,
-# MAGIC winddirection int,
-# MAGIC valueforwindcharacter int,
-# MAGIC stationpressure float,
-# MAGIC pressuretendency int,
-# MAGIC pressurechange int,
-# MAGIC sealevelpressure float,
-# MAGIC recordtype string,
-# MAGIC hourlyprecip string,
-# MAGIC altimeter float,
-# MAGIC airportcode string,
-# MAGIC displayairportname string,
-# MAGIC latitude float,
-# MAGIC longitude float
-# MAGIC )
-# MAGIC using csv
-# MAGIC options (
-# MAGIC header = "true",
-# MAGIC path = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv"
+# MAGIC %sql create table flights_with_weather(
+# MAGIC   year int,
+# MAGIC   month int,
+# MAGIC   day int,
+# MAGIC   time int,
+# MAGIC   timezone int,
+# MAGIC   skycondition string,
+# MAGIC   visibility float,
+# MAGIC   weathertype string,
+# MAGIC   drybulbfarenheit float,
+# MAGIC   drybulbcelsius float,
+# MAGIC   wetbulbfarenheit float,
+# MAGIC   wetbulbcelsius float,
+# MAGIC   dewpointfarenheit float,
+# MAGIC   dewpointcelsius float,
+# MAGIC   relativehumidity int,
+# MAGIC   windspeed int,
+# MAGIC   winddirection int,
+# MAGIC   valueforwindcharacter int,
+# MAGIC   stationpressure float,
+# MAGIC   pressuretendency int,
+# MAGIC   pressurechange int,
+# MAGIC   sealevelpressure float,
+# MAGIC   recordtype string,
+# MAGIC   hourlyprecip string,
+# MAGIC   altimeter float,
+# MAGIC   airportcode string,
+# MAGIC   displayairportname string,
+# MAGIC   latitude float,
+# MAGIC   longitude float
+# MAGIC ) using csv options (
+# MAGIC   header = "true",
+# MAGIC   path = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv"
 # MAGIC )
 
 # COMMAND ----------
@@ -406,28 +393,19 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC select * from flights_with_weather limit 10
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select count(*) from flights_with_weather
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC Create Delta Lake tables with CTAS (Create Table as Select)
+# MAGIC ##### Create Table As Select (CTAS)
+# MAGIC 
+# MAGIC Create Delta Lake tables with CTAS
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC create or replace table flights_with_weather_delta as select * from flights_with_weather
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select count(*) from flights_with_weather_delta
+# MAGIC %sql create
+# MAGIC or replace table flights_with_weather_delta as
+# MAGIC select
+# MAGIC   *
+# MAGIC from
+# MAGIC   flights_with_weather
 
 # COMMAND ----------
 
@@ -437,70 +415,93 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Note that CTAS doesn't support schema definition (it infers the schema from query results)
-# MAGIC This could be a problem when you create a delta table from CSV or json
-# MAGIC In this case you can create a temp view, define schema for it and then run CTAS
+# MAGIC Now the table type is `Managed`. 
+# MAGIC 
+# MAGIC For managed tables, the data is copied from original location (ADLS container) to the `schema` location in dbfs. 
+# MAGIC 
+# MAGIC If you delet the table all this data will be deleted as well (not the case with `External` tables)
+
+# COMMAND ----------
+
+dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Note that CTAS syntax doesn't support schema definition (it infers the schema from query results)
+# MAGIC 
+# MAGIC The recommended way to overcome it is to create a temp view, define schema for it and then run CTAS (similar as we did before but we used intermediate tables rather than temp views)
+# MAGIC 
 # MAGIC For example
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC create or replace temp view flights_with_weather_temp_view( 
-# MAGIC year int,
-# MAGIC month int,
-# MAGIC day int,
-# MAGIC time int,
-# MAGIC timezone int,
-# MAGIC skycondition string,
-# MAGIC visibility float,
-# MAGIC weathertype string,
-# MAGIC drybulbfarenheit float,
-# MAGIC drybulbcelsius float,
-# MAGIC wetbulbfarenheit float,
-# MAGIC wetbulbcelsius float,
-# MAGIC dewpointfarenheit float,
-# MAGIC dewpointcelsius float,
-# MAGIC relativehumidity int,
-# MAGIC windspeed int,
-# MAGIC winddirection int,
-# MAGIC valueforwindcharacter int,
-# MAGIC stationpressure float,
-# MAGIC pressuretendency int,
-# MAGIC pressurechange int,
-# MAGIC sealevelpressure float,
-# MAGIC recordtype string,
-# MAGIC hourlyprecip string,
-# MAGIC altimeter float,
-# MAGIC airportcode string,
-# MAGIC displayairportname string,
-# MAGIC latitude float,
-# MAGIC longitude float
-# MAGIC )
-# MAGIC using csv
-# MAGIC options (
-# MAGIC header = "true",
-# MAGIC path = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv"
+# MAGIC %sql create
+# MAGIC or replace temp view flights_with_weather_temp_view(
+# MAGIC   year int,
+# MAGIC   month int,
+# MAGIC   day int,
+# MAGIC   time int,
+# MAGIC   timezone int,
+# MAGIC   skycondition string,
+# MAGIC   visibility float,
+# MAGIC   weathertype string,
+# MAGIC   drybulbfarenheit float,
+# MAGIC   drybulbcelsius float,
+# MAGIC   wetbulbfarenheit float,
+# MAGIC   wetbulbcelsius float,
+# MAGIC   dewpointfarenheit float,
+# MAGIC   dewpointcelsius float,
+# MAGIC   relativehumidity int,
+# MAGIC   windspeed int,
+# MAGIC   winddirection int,
+# MAGIC   valueforwindcharacter int,
+# MAGIC   stationpressure float,
+# MAGIC   pressuretendency int,
+# MAGIC   pressurechange int,
+# MAGIC   sealevelpressure float,
+# MAGIC   recordtype string,
+# MAGIC   hourlyprecip string,
+# MAGIC   altimeter float,
+# MAGIC   airportcode string,
+# MAGIC   displayairportname string,
+# MAGIC   latitude float,
+# MAGIC   longitude float
+# MAGIC ) using csv options (
+# MAGIC   header = "true",
+# MAGIC   path = "abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv"
 # MAGIC )
 
 # COMMAND ----------
 
 # MAGIC %md 
-# MAGIC Now run CTAS- create managed table from temp view
+# MAGIC Now run CTAS, which creates managed table from temp view
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC create or replace table flights_with_weather_delta_from_view as select * from flights_with_weather_temp_view
+# MAGIC %sql create
+# MAGIC or replace table flights_with_weather_delta_from_view as
+# MAGIC select
+# MAGIC   *
+# MAGIC from
+# MAGIC   flights_with_weather_temp_view
 
 # COMMAND ----------
 
-# MAGIC %sql 
-# MAGIC describe extended flights_with_weather_delta_from_view
+# MAGIC %sql describe extended flights_with_weather_delta_from_view
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Enriching data with additional meta-data like ingestion time
+# MAGIC #### Excersise 
+# MAGIC 
+# MAGIC Create 2 additional delta tables: **airports_codes_locations_delta** and **flights_delays_delta** using CTAS techique.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC #### Enriching data with additional meta-data
 
 # COMMAND ----------
 
@@ -509,8 +510,18 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC create or replace table flights_with_weather_delta_from_view as select current_timestamp() as ingestiontime, * from flights_with_weather_temp_view
+# MAGIC %md 
+# MAGIC Using built-in `current_timestamp()` function 
+
+# COMMAND ----------
+
+# MAGIC %sql create
+# MAGIC or replace table flights_with_weather_delta_from_view as
+# MAGIC select
+# MAGIC   current_timestamp() as ingestiontime,
+# MAGIC   *
+# MAGIC from
+# MAGIC   flights_with_weather_temp_view
 
 # COMMAND ----------
 
