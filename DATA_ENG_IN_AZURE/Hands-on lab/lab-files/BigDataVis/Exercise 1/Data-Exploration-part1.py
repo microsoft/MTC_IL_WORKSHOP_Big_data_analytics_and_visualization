@@ -8,7 +8,7 @@
 
 spark.conf.set("fs.azure.account.auth.type.asastoremcw303474.dfs.core.windows.net", "SAS")
 spark.conf.set("fs.azure.sas.token.provider.type.asastoremcw303474.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.sas.FixedSASTokenProvider")
-spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "")
+spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "?sv=2021-06-08&ss=b&srt=sco&sp=rwlacx&se=2022-12-06T12:02:10Z&st=2022-11-28T04:02:10Z&spr=https&sig=c8%2FOYNti7PrOTpEwk%2Fz1XpbJR4%2BHZ9lebrFPBz1gLDo%3D")
 
 # COMMAND ----------
 
@@ -71,7 +71,14 @@ _sqldf.count()
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select count(*) from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv`
+# MAGIC select _c25 as airport,  max(_c9) as max_temp_c
+# MAGIC from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv`
+# MAGIC group by _c25
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC You can see that data is not clean. There are many invalid values with `M` value
 
 # COMMAND ----------
 
@@ -160,7 +167,7 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select * from flights_delays_external
+# MAGIC select * from flights_delays_external limit 10
 
 # COMMAND ----------
 
@@ -184,12 +191,37 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC select distinct (DepDel15)
+# MAGIC from flights_delays_external
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count (distinct (DepDel15))
+# MAGIC from flights_delays_external
+
+# COMMAND ----------
+
+# MAGIC %sql
 # MAGIC show tables
 
 # COMMAND ----------
 
 # MAGIC %sql 
 # MAGIC describe extended flights_delays_external
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Pay attention that this table is `External` and table format is `CSV`
+# MAGIC Since it's extrernal table, its location is the original one and the data is in the original files.
+# MAGIC 
+# MAGIC Also you can see that there is no history for non-delta tables
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC describe history flights_delays_external
 
 # COMMAND ----------
 
@@ -202,33 +234,35 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC create table flights_delays (
-# MAGIC year int,
-# MAGIC month int,
-# MAGIC dayofmonth int,
-# MAGIC dayofweek int,
-# MAGIC carrier string,
-# MAGIC crsdeptime string,
-# MAGIC depdelay int,
-# MAGIC depdel15 int,
-# MAGIC crsarrTime string,
-# MAGIC arrdelay int,
-# MAGIC arrdel15 int,
-# MAGIC canceled smallint,
-# MAGIC originairportcode string,
-# MAGIC originairportname string,
-# MAGIC originlatitude float,
-# MAGIC originlongitude float,
-# MAGIC destairportcode string,
-# MAGIC destairportname string,
-# MAGIC destlatitude float,
-# MAGIC destlongitude float
-# MAGIC )
-# MAGIC using csv options ( 
+# MAGIC %sql drop table flights_delays
+
+# COMMAND ----------
+
+# MAGIC %sql create table flights_delays (
+# MAGIC   year int,
+# MAGIC   month int,
+# MAGIC   dayofmonth int,
+# MAGIC   dayofweek int,
+# MAGIC   carrier string,
+# MAGIC   crsdeptime string,
+# MAGIC   depdelay int,
+# MAGIC   depdel15 int,
+# MAGIC   crsarrTime string,
+# MAGIC   arrdelay int,
+# MAGIC   arrdel15 int,
+# MAGIC   canceled smallint,
+# MAGIC   originairportcode string,
+# MAGIC   originairportname string,
+# MAGIC   originlatitude float,
+# MAGIC   originlongitude float,
+# MAGIC   destairportcode string,
+# MAGIC   destairportname string,
+# MAGIC   destlatitude float,
+# MAGIC   destlongitude float
+# MAGIC ) using csv options (
 # MAGIC   path = 'abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv',
-# MAGIC   header = "true");
-# MAGIC   
+# MAGIC   header = "true"
+# MAGIC );
 
 # COMMAND ----------
 
@@ -241,43 +275,57 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC select 
-# MAGIC (
-# MAGIC with flights_dep_delays (
-# MAGIC origin_airport,
-# MAGIC dep_total_delays
-# MAGIC ) as ( select originairportname, sum(depdel15) as origindelay15min 
-# MAGIC   from flights_delays
-# MAGIC   group by originairportname
-# MAGIC ) 
-# MAGIC  select max(dep_total_delays) from flights_dep_delays
+# MAGIC %md
+# MAGIC #### CTEs
 # MAGIC 
-# MAGIC )
+# MAGIC Spark supports CTEs - Common Table Expessions.
+# MAGIC 
+# MAGIC CTEs defines a temporary result set that can be refernced multiple times in other queries 
+# MAGIC 
+# MAGIC In order to define CTE - you use `WITH` clause
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC select 
-# MAGIC (
-# MAGIC with flights_dep_delays (
-# MAGIC origin_airport,
-# MAGIC dep_total_delays
-# MAGIC ) as ( select originairportname, sum(depdel15) as origindelay15min 
-# MAGIC   from flights_delays
-# MAGIC   group by originairportname
-# MAGIC ) 
-# MAGIC  select max(dep_total_delays) from flights_dep_delays
-# MAGIC 
-# MAGIC )
+# MAGIC   (
+# MAGIC     with flights_dep_delays (origin_airport, dep_total_delays) as (
+# MAGIC       select
+# MAGIC         originairportname,
+# MAGIC         sum(depdel15) as origindelay15min
+# MAGIC       from
+# MAGIC         flights_delays
+# MAGIC       group by
+# MAGIC         originairportname
+# MAGIC     )
+# MAGIC     select
+# MAGIC       max(dep_total_delays) as total_dep_delays
+# MAGIC     from
+# MAGIC       flights_dep_delays
+# MAGIC   )
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC select count(*) as doubledel, originairportname from flights_delays
-# MAGIC where depdel15 == 1 and arrdel15 == 1
-# MAGIC group by originairportname
-# MAGIC sort by doubledel desc
+# MAGIC %sql with flights_dep_delays (origin_airport, dep_total_delays) as (
+# MAGIC   select
+# MAGIC     originairportname,
+# MAGIC     sum(depdel15) as origindelay15min
+# MAGIC   from
+# MAGIC     flights_delays
+# MAGIC   group by
+# MAGIC     originairportname
+# MAGIC )
+# MAGIC select
+# MAGIC   origin_airport,
+# MAGIC   dep_total_delays
+# MAGIC from
+# MAGIC   flights_dep_delays
+# MAGIC order by dep_total_delays desc
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Let's create other two table with correct field types
 
 # COMMAND ----------
 
