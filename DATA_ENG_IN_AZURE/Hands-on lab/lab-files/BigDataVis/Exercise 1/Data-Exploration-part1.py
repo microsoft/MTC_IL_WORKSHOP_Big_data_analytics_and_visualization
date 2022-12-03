@@ -1,11 +1,39 @@
 # Databricks notebook source
-# MAGIC %md Access ADLS Using SAS token
+# MAGIC %md 
+# MAGIC ##### Access ADLS Using SAS token
+# MAGIC 
+# MAGIC Note that the recommended way to access ADLS from Databricks is by using AAD Service Principal and the backed by Azure Key Vault Databricks Secret Scope
 
 # COMMAND ----------
 
 spark.conf.set("fs.azure.account.auth.type.asastoremcw303474.dfs.core.windows.net", "SAS")
 spark.conf.set("fs.azure.sas.token.provider.type.asastoremcw303474.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.sas.FixedSASTokenProvider")
-spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "<>")
+spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##### ABFS protocol
+# MAGIC 
+# MAGIC ABFS protocol (Azure Blob File System) - Azure Blob storage driver for Hadoop required by Spark.
+# MAGIC ABFS is part of Apache Hadoop and is included in many of the commercial distributions of Hadoop. It's a recommended protocol today to use when working with ADLS v2
+# MAGIC 
+# MAGIC The objects in ADLS are represented as URIs with the following URI schema:
+# MAGIC 
+# MAGIC _abfs[s]://container_name@account_name.dfs.core.windows.net/<path>/<path>/<file_name>_
+# MAGIC   
+# MAGIC If you add an **_'s'_** at the end (abfss) then the ABFS Hadoop client driver will ALWAYS use Transport Layer Security (TLS) irrespective of the authentication method chosen.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##### dbutils
+# MAGIC 
+# MAGIC Databricks utilities tool
+# MAGIC 
+# MAGIC You can do many opertations with dbutils, for more details see [dbutils](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/databricks-utils)
+# MAGIC 
+# MAGIC List the content of ADLS labs-303474 container:
 
 # COMMAND ----------
 
@@ -13,29 +41,83 @@ dbutils.fs.ls("abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/Flight
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC select count(*) from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv`
+# MAGIC %md
+# MAGIC ##### Initial data exploration
+# MAGIC 
+# MAGIC Run sparkSQL directly on the files in ADLS.
+# MAGIC 
+# MAGIC Later we'll create tables 
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select count(*) from csv.`/mnt/FlightsDelaysMount_00/AirportCodeLocationLookupClean.csv`
+# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv`
+
+# COMMAND ----------
+
+#buil-in _sqldf dataframe created automatically by databricks
+_sqldf.count()
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select count(*) from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv`
+# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/AirportCodeLocationLookupClean.csv`
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv` limit 10
+# MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv`
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select count(*) from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightWeatherWithAirportCode.csv`
 
 # COMMAND ----------
 
 df = spark.read.csv('abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv', header=True)
-display(df)
 
+
+# COMMAND ----------
+
+dbutils.data.summarize(df)
+
+# COMMAND ----------
+
+display(df.groupBy("Month").count())
+
+# COMMAND ----------
+
+display(df.select("Month").distinct().count())
+
+# COMMAND ----------
+
+# MAGIC %md Check the number of null values in DepDel15. States the departure delay of at least 15 min.
+# MAGIC 
+# MAGIC If we want to use this field for delay prediction we should fix those records with null values. 
+
+# COMMAND ----------
+
+from pyspark.sql.functions import col
+percentage_nulls_in_DepDel15 = df.filter(col("DepDel15").isNull() ).count() / df.count() * 100
+print (f"{percentage_nulls_in_DepDel15} % null values in DepDel15 column") 
+      
+ 
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ###### Excersise: 
+# MAGIC Run dbutils.summarize for FlightWeatherWithAirportCode file
+# MAGIC 
+# MAGIC Check which columns have null values
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##### Create schema and tables
+# MAGIC 
+# MAGIC After we explored the data we create schemas and tables in order to work with the data as we get used to work with data bases
 
 # COMMAND ----------
 
@@ -45,7 +127,26 @@ display(df)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC describe schema default
+# MAGIC create schema flights
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC describe schema flights
+
+# COMMAND ----------
+
+dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC ##### Create external table
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC use flights
 
 # COMMAND ----------
 
@@ -64,12 +165,21 @@ display(df)
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select count(*) from flights_delays_external
+# MAGIC select DepDel15, count(*) as number_of_delays
+# MAGIC from flights_delays_external
+# MAGIC group by DepDel15
 
 # COMMAND ----------
 
-# MAGIC %sql 
-# MAGIC describe extended flights_delays_external
+# MAGIC %sql
+# MAGIC select DepDel15, count(DepDel15) as number_of_delays
+# MAGIC from flights_delays_external
+# MAGIC group by DepDel15
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Why results of previous two queries are different?
 
 # COMMAND ----------
 
@@ -78,13 +188,17 @@ display(df)
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC create schema flights
+# MAGIC %sql 
+# MAGIC describe extended flights_delays_external
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC use flights 
+# MAGIC %md
+# MAGIC What's wrong with this table defintion?
+# MAGIC 
+# MAGIC Since the original data is in CSV format, Spark can not infer precisely the correct fields types.
+# MAGIC 
+# MAGIC The better way is to define the types strictly
 
 # COMMAND ----------
 
