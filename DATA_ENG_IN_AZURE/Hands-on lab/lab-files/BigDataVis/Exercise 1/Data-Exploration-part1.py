@@ -46,12 +46,17 @@ dbutils.fs.ls("abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/Flight
 # MAGIC 
 # MAGIC Run sparkSQL directly on the files in ADLS.
 # MAGIC 
-# MAGIC Later we'll create tables 
+# MAGIC Later we'll create schemas and tables 
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC select * from csv.`abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/FlightDelaysWithAirportCodes.csv`
+
+# COMMAND ----------
+
+# MAGIC %md 
+# MAGIC Databricks provides built-in Spark dataframe `_sqldf` whe running sparkSQL. We can reuse it in the following operations
 
 # COMMAND ----------
 
@@ -87,6 +92,10 @@ df = spark.read.csv('abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/
 
 # COMMAND ----------
 
+display(df)
+
+# COMMAND ----------
+
 dbutils.data.summarize(df)
 
 # COMMAND ----------
@@ -99,7 +108,7 @@ display(df.select("Month").distinct().count())
 
 # COMMAND ----------
 
-# MAGIC %md Check the number of null values in DepDel15. States the departure delay of at least 15 min.
+# MAGIC %md Check the number of null values in DepDel15, this colimn states the departure delay of at least in 15 min.
 # MAGIC 
 # MAGIC If we want to use this field for delay prediction we should fix those records with null values. 
 
@@ -117,14 +126,14 @@ print (f"{percentage_nulls_in_DepDel15} % null values in DepDel15 column")
 # MAGIC ##### `Excersise` 
 # MAGIC Run dbutils.summarize for FlightWeatherWithAirportCode file
 # MAGIC 
-# MAGIC Check which columns have null values
+# MAGIC Check which columns have null values and must be fixed 
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ##### Create schema and tables
 # MAGIC 
-# MAGIC After we explored the data we create schemas and tables in order to work with the data as we get used to work with data bases
+# MAGIC After we explored the data we create schemas and tables in order to work with the data as we get used to work with regular data bases
 
 # COMMAND ----------
 
@@ -184,16 +193,20 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # MAGIC 
 # MAGIC Where does it point to?
 # MAGIC 
-# MAGIC Pay attention that this table is External and the table format is CSV. Since it's an extrernal table, the location is the original one: the ADLS container.
+# MAGIC Pay attention that this table is ***External*** and the table format is CSV. Since it's an extrernal table, the location is the original one: the ADLS container.
 # MAGIC 
 # MAGIC Also you can see that there is no history for non-delta tables.
 # MAGIC 
-# MAGIC The history supported by Delta format.
+# MAGIC The history is supported by Delta format.
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC describe history flights_delays_external
+
+# COMMAND ----------
+
+# MAGIC %md Now we can work with this table as we get used working with regular tables...
 
 # COMMAND ----------
 
@@ -241,9 +254,11 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # MAGIC %md
 # MAGIC What's wrong with this table defintion?
 # MAGIC 
-# MAGIC Since the original data is in CSV format, Spark can not infer precisely the correct fields types.
+# MAGIC Since the original data is in CSV format, Spark can not infer precisely the correct fields types (by default). 
 # MAGIC 
-# MAGIC The better way to create table, is to define the types strictly
+# MAGIC You can enforce schema inference also for CSV, JSON formats by setting format option : `inferSchema=true`, see below examples
+# MAGIC 
+# MAGIC Howver the better way is to create table and define the types strictly.. 
 
 # COMMAND ----------
 
@@ -415,11 +430,13 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Now the table type is `Managed`. 
+# MAGIC Now the table type is `Managed`.  By default the tables are created in Delta format.
 # MAGIC 
-# MAGIC For managed tables, the data is copied from original location (ADLS container) to the `schema` location in dbfs. 
+# MAGIC For managed tables, the data is copied from original location (ADLS container) to the `schema` location in dbfs (Databricks file system). 
 # MAGIC 
-# MAGIC If you delet the table all this data will be deleted as well (not the case with `External` tables)
+# MAGIC The Databricks File System (DBFS) is a distributed file system mounted into an Azure Databricks workspace and available on Azure Databricks clusters. 
+# MAGIC 
+# MAGIC If you delete the table all this data will be deleted as well (not the case with `External` tables)
 
 # COMMAND ----------
 
@@ -428,9 +445,23 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC 
+# MAGIC ##### `Exercise` 
+# MAGIC 
+# MAGIC Research a little bit Delta format, which folders, files are created for Delta
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC Note that CTAS syntax doesn't support schema definition (it infers the schema from query results)
 # MAGIC 
 # MAGIC The recommended way to overcome it is to create a temp view, define schema for it and then run CTAS (similar as we did before but we used intermediate tables rather than temp views)
+# MAGIC 
+# MAGIC Temp view exists only during Spark Session.
 # MAGIC 
 # MAGIC For example
 
@@ -558,6 +589,11 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC INSERT INTO
+
+# COMMAND ----------
+
 # MAGIC %sql
 # MAGIC insert into
 # MAGIC   flights_with_weather_delta_from_view (
@@ -570,7 +606,7 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC Run the previous `insert into` one more time, you will succeed. This operation **is not idempotent one**.
+# MAGIC Run the previous `INSERT INTO` one more time, you will succeed, effectively duplicating the data. The meaning is `INSERT INTO` operation **is not idempotent**.
 
 # COMMAND ----------
 
@@ -583,30 +619,19 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 # MAGIC 
 # MAGIC ##### INSERT INTO vs. COPY INTO
 # MAGIC 
-# MAGIC Important: COPY INTO **is idempotent operation**
+# MAGIC Important: COPY INTO **is idempotent operation** and so recommended one for the incremental data load. 
+# MAGIC 
+# MAGIC It will help you to avoid data duplication in the target tables.
+# MAGIC 
+# MAGIC Let's see it in action
 
 # COMMAND ----------
 
-# MAGIC %sql create or replace temp view incremental_flights_with_weather_data_atl as
-# MAGIC select
-# MAGIC  *
-# MAGIC from
-# MAGIC   flights_with_weather_delta_from_view
-# MAGIC where
-# MAGIC   airportcode == "ATL"
+# MAGIC %sql drop table airports_codes_locations_stg
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC select count(*) from incremental_flights_with_weather_data_atl
-
-# COMMAND ----------
-
-# MAGIC %sql select count(*) from flights_with_weather_delta_from_view
-
-# COMMAND ----------
-
-# MAGIC %sql create or replace table airports_codes_locations_stg(
+# MAGIC %sql create table airports_codes_locations_stg(
 # MAGIC   airportid int,
 # MAGIC   airport string,
 # MAGIC   displayairportname string,
@@ -633,9 +658,9 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 # COMMAND ----------
 
 # MAGIC %md 
-# MAGIC Run once again the previous `Copy Into`- zero records will be inserted. 
+# MAGIC Run once again the previous `COPY INTO`- zero records will be inserted. 
 # MAGIC 
-# MAGIC `COPY INTO` is idempotent operation 
+# MAGIC You can see the second running for the same data afffects zero rows and inserts zero.  In other words `INSERT INTO` is idempotent operation 
 
 # COMMAND ----------
 
@@ -646,6 +671,16 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 
 # MAGIC %sql
 # MAGIC show tables
+
+# COMMAND ----------
+
+# MAGIC %sql create or replace temp view incremental_flights_with_weather_data_atl as
+# MAGIC select
+# MAGIC  *
+# MAGIC from
+# MAGIC   flights_with_weather_delta_from_view
+# MAGIC where
+# MAGIC   airportcode == "ATL"
 
 # COMMAND ----------
 
@@ -662,15 +697,19 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 # MAGIC 
 # MAGIC Let's explore Delta Lake format
 # MAGIC 
-# MAGIC Let's see 
+# MAGIC Delta Lake provides ACID transactions, hstory, time travel, schema enforcement, perfromance optimizations   
+
+# COMMAND ----------
+
+# MAGIC %sql drop view incremental_flights_with_weather_data_temp_view
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC create or replace temp view incremental_flights_with_weather_data_temp_view as
+# MAGIC create temp view incremental_flights_with_weather_data_temp_view as
 # MAGIC select
 # MAGIC   *,
-# MAGIC   1 as dirty_column
+# MAGIC   1 as dirty_column_flag
 # MAGIC from
 # MAGIC   flights_with_weather_delta_from_view
 # MAGIC where
@@ -698,7 +737,19 @@ dbutils.fs.ls("dbfs:/user/hive/warehouse/flights.db/flights_with_weather_delta/"
 
 # COMMAND ----------
 
+# MAGIC %md Schema enforcement in action
+# MAGIC In this specific case you can enforce merge, since adding new field doesn't break a schema (echema evolution)
+# MAGIC 
+# MAGIC Set Spark parameter below, to enforce schema merge and run the `INSERT INTO` once again
+
+# COMMAND ----------
+
 spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled",  "true")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Run again `INSERT INTO`
 
 # COMMAND ----------
 
@@ -712,8 +763,23 @@ spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled",  "true")
 
 # COMMAND ----------
 
+# MAGIC %md 
+# MAGIC Transactional history and Time Travel with Delta
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC describe history flights_with_weather_delta_from_view
+
+# COMMAND ----------
+
 # MAGIC %sql
 # MAGIC select count(*) from flights_with_weather_delta_from_view version as of  0
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Roolback to the table previous version with Delta
 
 # COMMAND ----------
 
