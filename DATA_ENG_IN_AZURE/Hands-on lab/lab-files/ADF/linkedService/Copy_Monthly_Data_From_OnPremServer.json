@@ -1,0 +1,13 @@
+{
+	"name": "Copy_Monthly_Data_From_OnPremServer",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "\\\\sflightsandweatherfiles.file.core.windows.net\\flightsandweather-monthly",
+			"userId": "sflightsandweatherfiles",
+			"encryptedCredential": ""
+		}
+	}
+}

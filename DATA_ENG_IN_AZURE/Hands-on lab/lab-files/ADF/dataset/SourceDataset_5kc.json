@@ -1,0 +1,67 @@
+{
+	"name": "SourceDataset_5kc",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Copy_Monthly_Data_From_OnPremServer",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"folderPath": "FlightsAndWeather"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "OriginAirportCode",
+				"type": "String"
+			},
+			{
+				"name": "Month",
+				"type": "String"
+			},
+			{
+				"name": "DayofMonth",
+				"type": "String"
+			},
+			{
+				"name": "CRSDepHour",
+				"type": "String"
+			},
+			{
+				"name": "DayOfWeek",
+				"type": "String"
+			},
+			{
+				"name": "Carrier",
+				"type": "String"
+			},
+			{
+				"name": "DestAirportCode",
+				"type": "String"
+			},
+			{
+				"name": "DepDel15",
+				"type": "String"
+			},
+			{
+				"name": "WindSpeed",
+				"type": "String"
+			},
+			{
+				"name": "SeaLevelPressure",
+				"type": "String"
+			},
+			{
+				"name": "HourlyPrecip",
+				"type": "String"
+			}
+		]
+	}
+}

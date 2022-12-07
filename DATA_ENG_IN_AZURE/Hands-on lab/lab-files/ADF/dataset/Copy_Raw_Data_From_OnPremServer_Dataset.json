@@ -1,0 +1,42 @@
+{
+	"name": "Copy_Raw_Data_From_OnPremServer_Dataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Copy_Raw_Data_From_OnPremServer",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "AIRPORT_ID",
+				"type": "String"
+			},
+			{
+				"name": "AIRPORT",
+				"type": "String"
+			},
+			{
+				"name": "DISPLAY_AIRPORT_NAME",
+				"type": "String"
+			},
+			{
+				"name": "LATITUDE",
+				"type": "String"
+			},
+			{
+				"name": "LONGITUDE",
+				"type": "String"
+			}
+		]
+	}
+}

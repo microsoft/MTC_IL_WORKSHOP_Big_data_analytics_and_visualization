@@ -1,16 +1,25 @@
 {
-	"name": "DelimitedTextToBlob",
+	"name": "DestinationDataset_5kc",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureBlobStorage1",
+			"referenceName": "Copy_Raw_Data_To_Datalake",
 			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"cw_folderPath": {
+				"type": "String"
+			}
 		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"folderPath": "Triage",
+				"fileName": "FlightsAndWeather.csv",
+				"folderPath": {
+					"value": "@dataset().cw_folderPath",
+					"type": "Expression"
+				},
 				"container": "sparkcontainer"
 			},
 			"columnDelimiter": ",",
@@ -19,6 +28,5 @@
 			"quoteChar": "\""
 		},
 		"schema": []
-	},
-	"type": "Microsoft.DataFactory/factories/datasets"
+	}
 }

@@ -1,15 +1,17 @@
 {
-	"name": "DelimitedText1",
+	"name": "Copy_Raw_Data_To_Datalake_Dataset",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "fileShare",
+			"referenceName": "Copy_Raw_Data_To_Datalake",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
-				"type": "FileServerLocation"
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "Triage",
+				"container": "sparkcontainer"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
@@ -17,6 +19,5 @@
 			"quoteChar": "\""
 		},
 		"schema": []
-	},
-	"type": "Microsoft.DataFactory/factories/datasets"
+	}
 }
