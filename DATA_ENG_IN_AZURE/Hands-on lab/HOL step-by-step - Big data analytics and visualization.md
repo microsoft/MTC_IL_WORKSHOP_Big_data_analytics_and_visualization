@@ -9,7 +9,7 @@ Hands-on lab step-by-step
 </div>
 
 <div class="MCWHeader3">
-November 2022
+November 2021
 </div>
 
 Information in this document, including URL and other Internet Web site references, is subject to change without notice. Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places, and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, e-mail address, logo, person, place or event is intended or should be inferred. Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.
@@ -18,7 +18,7 @@ Microsoft may have patents, patent applications, trademarks, copyrights, or othe
 
 The names of manufacturers, products, or URLs are provided for informational purposes only and Microsoft makes no representations and warranties, either expressed, implied, or statutory, regarding these manufacturers or the use of the products with any Microsoft technologies. The inclusion of a manufacturer or product does not imply endorsement of Microsoft of the manufacturer or product. Links may be provided to third party sites. Such sites are not under the control of Microsoft and Microsoft is not responsible for the contents of any linked site or any link contained in a linked site, or any changes or updates to such sites. Microsoft is not responsible for webcasting or any other form of transmission received from any linked site. Microsoft is providing these links to you only as a convenience, and the inclusion of any link does not imply endorsement of Microsoft of the site or the products contained therein.
 
-© 2022 Microsoft Corporation. All rights reserved.
+© 2021 Microsoft Corporation. All rights reserved.
 
 Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/intellectualproperty/Trademarks/Usage/General.aspx> are trademarks of the Microsoft group of companies. All other trademarks are property of their respective owners.
 
@@ -31,11 +31,12 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
   - [Overview](#overview)
   - [Solution architecture](#solution-architecture)
   - [Requirements](#requirements)
-  - ## TODO - Aviad add ADF part
   - [Exercise 1: Retrieve lab environment information and create Databricks cluster](#exercise-1-retrieve-lab-environment-information-and-create-databricks-cluster)
     - [Task 1: Retrieve Azure Storage account information and Subscription Id](#task-1-retrieve-azure-storage-account-information-and-subscription-id)
     - [Task 2: Create an Azure Databricks cluster](#task-2-create-an-azure-databricks-cluster)
-  - [Exercise 2: Load Sample Data and Databricks Notebooks](#exercise-2-load-sample-data-and-databricks-notebooks)
+    - [Task 3: Configure the Databricks Workspace and connect it to the Azure Storage Account](#task-3-configure-the-databricks-workspace-and-connect-it-to-the-azure-storage-account)
+  - [Exercise 2: Setup Azure Data Factory and Load Sample Data to Azure Storage](#exercise-2-setup-azure-data-factory-and-load-sample-data-to-azure-storage)
+    - [Task 1: Open Azure Data Factory and create copy pipeline using the Copy Data Wizard](#task-1-open-azure-data-factory-and-create-copy-pipeline-using-the-copy-data-wizard)
     - [Task 1: Upload the Sample Datasets](#task-1-upload-the-sample-datasets)
     - [Task 2: Open Azure Databricks and complete lab notebooks](#task-2-open-azure-databricks-and-complete-lab-notebooks)
   - [Exercise 3: Setup Azure Data Factory](#exercise-3-setup-azure-data-factory)
@@ -88,7 +89,7 @@ Below is a diagram of the solution architecture you will build in this lab. Plea
 
    - Trial subscriptions will not work.
 
-2. If you are not a Service Administrator or Co-administrator for the Azure subscription, or if you are running the lab in a hosted environment, you will need to install [Visual Studio 2022 Community](https://visualstudio.microsoft.com/downloads/) with the **ASP.NET and web development** and **Azure development** workloads.
+2. If you are not a Service Administrator or Co-administrator for the Azure subscription, or if you are running the lab in a hosted environment, you will need to install [Visual Studio 2019 Community](https://visualstudio.microsoft.com/downloads/) with the **ASP.NET and web development** and **Azure development** workloads.
 
 3. Follow all the steps provided in [Before the Hands-on Lab](Before%20the%20HOL%20-%20Big%20data%20analytics%20and%20visualization.md).
 
@@ -156,15 +157,194 @@ You have provisioned an Azure Databricks workspace, and now you need to create a
 
    - **Workers**: `1`
 
+   - **Spark Config**: Expand **Advanced Options** and edit the Spark Config by entering the connection information for your Azure Storage account that you copied above in Task 1. This will allow your cluster to access the lab files. Enter the following:
+
+     `spark.hadoop.fs.azure.account.key.<STORAGE_ACCOUNT_NAME>.blob.core.windows.net <ACCESS_KEY>`, where <STORAGE_ACCOUNT_NAME> is your Azure Storage account name, and <ACCESS_KEY> is your storage access key.
+
+   **Example:** `spark.hadoop.fs.azure.account.key.bigdatalabstore.blob.core.windows.net HD+91Y77b+TezEu1lh9QXXU2Va6Cjg9bu0RRpb/KtBj8lWQa6jwyA0OGTDmSNVFr8iSlkytIFONEHLdl67Fgxg==`
+
    ![The New Cluster form is populated with the values as outlined above.](media/azure-databricks-create-cluster-form.png 'Create Cluster')
 
 6. Select **Create Cluster**.
 
-## Exercise 2: Load Sample Data and Databricks Notebooks
+### Task 3: Configure the Databricks Workspace and connect it to the Azure Storage Account
 
-Duration: 60 minutes
+1. Within Azure Databricks, select **Data Science & Engineering**.
+
+   ![The Data Science & Engineering view is selected.](media/databricks-machine-learning.png 'Data Science & Engineering')
+
+2. Within Azure Databricks, select **Workspace (1)** on the menu, then **Users (2)**, then select the down arrow next to your username **(3)**. 
+	Select **Import (4)**.
+
+   ![In the left menu, the Workspace item is selected. Beneath the Workspaces pane, the Users item is selected. Beneath the Users pane, the current user is selected. The menu carat next to the username of the user is expanded with the Import item selected.](media/select-import-in-user-workspace.png 'Import')
+
+4. Within the Import Notebooks dialog, select Import from: **URL (1)**, then paste the following into the URL textbox **(2)**: https://github.com/microsoft/MTC_IL_WORKSHOP_Big_data_analytics_and_visualization/tree/main/DATA_ENG_IN_AZURE/Hands-on%20lab/lab-files/BigDataVis.dbc?raw=true . Select **Import (3)** to continue.
+
+   ![The Import Notebooks dialog is shown that will allow the user to import notebooks via a file upload or URL.](media/import-notebooks.png 'Import from file')
+
+   > **Note:**  This Databricks archive is available within the `\DATA_ENG_IN_AZURE\Hands-on lab\lab-files` directory of this repository.  In the `BigDataVis` subfolder, you can also see the individual notebooks as separate files in .ipynb format.
+
+5. After importing, expand the new **BigDataVis** folder.
+
+   ![Workspace is open. The current user is selected. BigDataVis folder is highlighted.](media/adf-selecting-bigdatavis.png 'BigDataVis')
+
+   > **WARNING:** When you open a notebook, make sure you attach your cluster to the notebook using the **Connect** dropdown. You will need to do this for each notebook you open:
+   >
+   >![In the taskbar for a notebook, the cluster that is currently attached is highlighted.](media/attach-cluster-to-notebook.png 'Attach cluster to notebook')
+
+6. Run each cell of the notebook located in the **Exercise 1** folder (03 - Connect Data Lake to Databricks) individually by selecting within the cell, then entering **Ctrl+Enter** on your keyboard.
+
+   ![In the Workspace screen, beneath BigDataVis the Exercise 1 folder is selected. Beneath Exercise 1, one notebook is displayed 03 - Connect Data Lake to Databricks.](media/azure-databricks-exercise-1.png 'Exercise 1 folder')
+
+
+
+## Exercise 2: Setup Azure Data Factory and Load Sample Data to Azure Storage
 
 In this exercise, you will implement a classification experiment. You will load the training data from your local machine into a dataset. Then, you will explore the data to identify the primary components you should use for prediction and use two different algorithms for predicting the classification. You will then evaluate the performance of both algorithms and choose the algorithm that performs best. The model selected will be exposed as a web service integrated with the optional sample web app at the end.
+
+### Task 1: Open Azure Data Factory and create copy pipeline using the Copy Data Wizard
+
+1. Launch a new browser window, and navigate to the Azure portal (<https://portal.azure.com>). Once prompted, log in with your Microsoft Azure credentials. If prompted, choose whether your account is an organization account or a Microsoft account. This will be based on which account was used to provision your Azure subscription used for this lab.
+
+2. From the side menu in the Azure portal, choose **Resource groups**, then enter your resource group name into the filter box, and select it from the list.
+
+3. Next, select your Azure Data Factory service from the list.
+
+   ![Azure Portal Resource Listing page is shown. Azure Data Factory resource is highlighted.](media/select-azure-datafactory.png 'Azure Data Factory')
+
+4. On the Data Factory Overview screen, select **Open Azure Data Factory Studio**.
+
+   ![In the Azure Data Factory resource screen, Overview is selected from the left menu. The Open Azure Data Factory Studio tile is selected.](media/adf-author-monitor.png 'Open Azure Data Factory Studio')
+
+5. A new page will open in another tab or new window. Within the Azure Data Factory site, select **Manage** on the menu.
+
+  ![In the left menu, the Manage icon is selected.](media/adf-home-manage-link.png 'Manage link on ADF home page')
+
+
+6. Select the Azure Data Factory Overview button on the menu. Leave this open for the next exercise.
+
+    ![The Azure Data Factory Overview button is selected from the left menu.](media/adf-overview.png 'ADF Overview')
+
+
+7. Within the Azure Data Factory overview page, select **Ingest**.
+
+   ![The Ingest item is from the Azure Data Factory overview page.](media/adf-copy-data-link.png 'Ingest')
+
+
+8. Enter the **Properties** page
+  
+   - Select **Built-in copy task (1)**
+   - Select **Run once now** below **Task cadence or task schedule (2)**.
+
+   ![The Properties form for the copy data task is shown populated with the values outlined above.](media/adf-copy-data-properties.png 'Properties dialog box')
+
+9. Select **Next (6)**.
+
+10. On the Source data store screen, select **+ Create new connection**.
+
+   ![The source form for the copy data task is shown. + Create new connection link is highlighted.](media/adf-copy-data-new-connection.png 'Data Source Selection')
+
+11. Scroll through the options and select **File System (1)**, then select **Continue (2)**.
+
+   ![In the New linked service list, File System is selected. The Continue button is selected.](media/adf-copy-data-new-linked-service.png 'Select File System')
+
+13. In the New Linked Service form, enter the following:
+
+   - **Name (1)**: `Copy_Raw_Data_From_OnPremServer`
+
+   - **Host (3)**: **\\sflightsandweatherfiles.file.core.windows.net\flightsandweather**
+
+   - **User name (4)**: sflightsandweatherfiles
+
+   - **Password (5)**: <secret>
+
+   ![In the New linked service form, fields are populated with the values specified in Step 6. The Test connection button is highlighted.](media/adf-copy-data-linked-service-settings.png 'New Linked Service settings')
+
+14. Select **Test connection (6)** to verify you correctly entered the values. Finally, select **Create (7)**.
+
+15. On the Source data store page, select **Next**.
+
+   ![On the Source data store page, OnPremServer is selected, and the Next button is highlighted.](media/adf-copy-data-source-next.png 'Select Next')
+
+16. On the **Source data store** screen, leave the **File or Folder (1)** empty. Under file loading behavior, check **Recursively**, then select **Next**.
+
+   ![In the Source data store screen, the Browse button is highlighted. The File or Folder is set to FlightsAndWeather, the File loading behavior is set to Load all files, and the checkbox for Recursively is checked.](media/adf-copy-data-source-choose-input.png 'Choose the input file or folder page')
+
+17. On the File format settings page, select the following options:
+
+    - **File format (1)**: **Text format**
+
+    - **Column delimiter**: **Comma (,)**
+
+    - **Row delimiter**: **Default (\r, \n, or \r\n)**
+
+    - **First row as header (2)**: **Checked**
+
+    ![The File format settings form is displayed populated with the previously defined values.](media/adf-copy-data-file-format.png 'File format settings')
+
+18. Select **Next (3)**.
+
+19. On the Destination data store screen, select **+ New connection**.
+
+20. Select **Azure Blob Storage (1)** within the New Linked Service blade, then select **Continue (2)**.
+
+    ![In the New linked service list, Azure Blob Storage is selected, and the Continue button is highlighted.](media/adf-copy-data-blob-storage.png 'Select Blob Storage')
+
+21. On the New Linked Service (Azure Blob Storage) account screen, enter the following, test your connection **(4)**, and then select **Create (5)**.
+
+    - **Name**: `Copy_Raw_Data_To_Datalake`
+
+    - **Authentication method**: Select **Account key**
+
+    - **Account selection method**: **From Azure subscription**
+
+    - **Storage account name**: Select the blob storage account you provisioned in the before-the-lab section.  It will begin with **asastoremcw**.
+
+    ![On the New linked service (Azure Blob storage) page, the fields are set to the previously defined values.](media/adf-copy-data-blob-storage-linked.png 'New Linked Service Blob Storage')
+
+22. On the Destination data store page, configure the Blob Storage output path.
+
+    - **Folder path (1)**: `sparkcontainer/Triage/`
+
+    - **Copy behavior (4)**: **None**
+
+    - Select **Next (5)**.
+
+      ![On the Destination data store form, fields are set to the previously defined values.](media/adf-copy-data-output-file-folder.png 'Destination data store page')
+
+23. On the File format settings screen, select the **Text format (1)** file format, and check the **Add header to file (2)** checkbox, then select **Next (3)**. If present, leave **Max rows per file** and **File name prefix** at their defaults.
+
+    ![On the File format settings page, the File Format is set to Text format, and the check box for Add header to file is selected. The Next button is selected.](media/adf-copy-data-file-format-settings.png 'File format settings page')
+
+24. On the **Settings** screen, select **Skip incompatible rows (1)** under Fault tolerance, and uncheck **Enable logging (2)**. If present, keep **Data consistency verification** unchecked. Expand Advanced Settings and set Degree of copy parallelism to `10` **(3)**, then select **Next (4)**.
+   
+    ![In the Fault tolerance drop-down Skip incompatible rows is selected, and the Degree of copy parallelism is set to 10. The Next button is selected.](media/adf-copy-data-settings.png 'Settings page')
+
+25. Review settings on the **Summary** tab, but **DO NOT choose Next**.
+
+    ![The Summary page is displayed.](media/adf-copy-data-summary.png 'Summary page')
+
+26. Scroll down on the summary page until you see the **Copy Settings (1)** section. Select **Edit (2)** next to **Copy Settings**.
+
+    ![The Edit link is selected next to the Copy settings header.](media/adf-copy-data-review-page.png 'Summary page')
+
+27. Change the following Copy setting:
+
+    - **Retry (1)**: `3`
+
+    - Select **Save (2)**.
+
+      ![In the Copy settings form, the Retry textbox is set to 3, and the Save link is highlighted.](media/adf-copy-data-copy-settings.png 'Copy settings')
+
+28. After saving the Copy settings, select **Next (3)** on the Summary tab.
+
+29. On the **Deployment** screen, you will see a message that the deployment is in progress, and after a minute or two, the deployment is completed. Select **Edit Pipeline** to close out of the wizard and navigate to the pipeline editing blade.
+
+    ![The Deployment screen indicates the deployment is complete.](media/adf-copy-data-deployment.png 'Deployment page')
+    
+
+
+
 
 ### Task 1: Upload the Sample Datasets
 
