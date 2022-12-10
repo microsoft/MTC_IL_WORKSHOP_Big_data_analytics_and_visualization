@@ -97,7 +97,8 @@ The below ARM template deploys several Azure resources for the labs, including A
 3. Select the **Review + create** button, then **Create**. The provisioning of your deployment resources will take approximately 5 minutes.
 
 
-### Task 3: Configure Databricks Access To Azure Data Lake Storage
+### Task 3: Configure Databricks Access To Azure Data Lake Storage (Optional)
+This option is for connecting to Azure Blob Storage or Azure Data Lake Storage with Databricks secret scope backed by Service Principal secret key in Azure Key Vault. 
 
 1. [In Azure Active Directory create Service principal with a secret in Azure Key Vault](https://learn.microsoft.com/en-us/azure/purview/create-service-principal-azure)
    Put down the Azure Active directory *Tenant ID*, *Application ID*, *Secret Desciption* in Key Vault, we will need it later.
