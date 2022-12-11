@@ -37,7 +37,8 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
     - [Task 3: Configure the Databricks Workspace and connect it to the Azure Storage Account](#task-3-configure-the-databricks-workspace-and-connect-it-to-the-azure-storage-account)
   - [Exercise 2: Setup Azure Data Factory and Load Sample Data to Azure Storage](#exercise-2-setup-azure-data-factory-and-load-sample-data-to-azure-storage)
     - [Task 1: Open Azure Data Factory and create copy pipeline using the Copy Data Wizard](#task-1-open-azure-data-factory-and-create-copy-pipeline-using-the-copy-data-wizard)
-    - [Task 1: Upload the Sample Datasets](#task-1-upload-the-sample-datasets)
+  - [Exercise 3: Work with Sample Data and Databricks Notebooks](#exercise-3-work-with-sample-data-and-databricks-notebooks)
+    - [Task 1: Create Databricks Tables from the Sample Datasets](#task-1-create-databricks-tables-from-the-sample-datasets)
     - [Task 2: Open Azure Databricks and complete lab notebooks](#task-2-open-azure-databricks-and-complete-lab-notebooks)
   - [Exercise 3: Setup Azure Data Factory](#exercise-3-setup-azure-data-factory)
     - [Task 1: Download and stage data to be processed](#task-1-download-and-stage-data-to-be-processed)
@@ -334,42 +335,77 @@ In this exercise, you will implement a classification experiment. You will load 
 27. On the **Deployment** screen, you will see a message that the deployment is in progress, and after a minute or two, the deployment is completed. Select **Edit Pipeline** to close out of the wizard and navigate to the pipeline editing blade.
 
     ![The Deployment screen indicates the deployment is complete.](media/adf-copy-data-deployment.png 'Deployment page')
-    
 
 
 
+## Exercise 3: Work with Sample Data and Databricks Notebooks
 
-### Task 1: Upload the Sample Datasets
+### Task 1: Create Databricks Tables from the Sample Datasets
 
-1. Before you begin working with machine learning services, there are three datasets you need to load.
+1. Go to your Azure Storage account, and select "Containers" in the left menu.
 
-2. Download the three CSV sample datasets from here: <http://bit.ly/2wGAqrl> (If you get an error, or the page won't open, try pasting the URL into a new browser window and verify the case sensitive URL is exactly as shown). If you are still having trouble, a zip file called AdventureWorksTravelDatasets.zip is included in the lab-files folders.
+![The Storage account menu item - containers.](media/Storage-Containers-1.png 'Azure Storage account sparkcontainer')
 
-3. Extract the ZIP and verify you have the following files:
 
+2. Go into **sparkcontainer** > **Triage**. 
+	Verify you have the following files:
    - FlightDelaysWithAirportCodes.csv
    - FlightWeatherWithAirportCode.csv
    - AirportCodeLocationLookupClean.csv
 
-4. Open your Azure Databricks workspace. Before continuing to the next step, verify that your new cluster is running. Do this by navigating to **Compute (1)** on the left-hand menu and ensuring that the state of your cluster is **Running (2)**.
+3. Open your Azure Databricks workspace. Before continuing to the next step, verify that your new cluster is running. Do this by navigating to **Compute (1)** on the left-hand menu and ensuring that the state of your cluster is **Running (2)**.
 
-   ![The Clusters menu item is selected and the cluster is shown indicating that it is in the Running state.](media/azure-databricks-clusters-running.png 'Clusters')
+![The Clusters menu item is selected and the cluster is shown indicating that it is in the Running state.](media/azure-databricks-clusters-running.png 'Clusters')
 
-5. Select **Data (1)** from the menu. Next, select **default (2)** under Databases (if this does not appear, start your cluster). Finally, select **Create Table (3)** above the Tables header.
+
+4. Within Azure Databricks, select **Workspace (1)** on the menu, then **Users (2)**, then select the down arrow next to your username **(3)**. Select **Import (4)**.
+
+![In the left menu, the Workspace item is selected. Beneath the Workspaces pane, the Users item is selected. Beneath the Users pane, the current user is selected. The menu carat next to the username of the user is expanded with the Import item selected.](media/select-import-in-user-workspace.png 'Import')
+
+
+6. Within the Import Notebooks dialog, select Import from: **URL (1)**, then paste the following into the URL textbox **(2)**: https://github.com/microsoft/MTC_IL_WORKSHOP_Big_data_analytics_and_visualization/tree/main/DATA_ENG_IN_AZURE/Hands-on%20lab/lab-files/BigDataVis.dbc?raw=true . Select **Import (3)** to continue.
+
+   ![The Import Notebooks dialog is shown that will allow the user to import notebooks via a file upload or URL.](media/import-notebooks.png 'Import from file')
+
+   > **Note:**  This Databricks archive is available within the `Hands-on lab\lab-files` directory of this repository.  In the `BigDataVis` subfolder, you can also see the individual notebooks as separate files in .ipynb format.
+
+7. After importing, expand the new **BigDataVis** folder.
+
+   ![Workspace is open. The current user is selected. BigDataVis folder is highlighted.](media/adf-selecting-bigdatavis.png 'BigDataVis')
+
+   > **WARNING:** When you open a notebook, make sure you attach your cluster to the notebook using the **Attach to cluster** dropdown. You will need to do this for each notebook you open.
+   >
+   >
+
+![In the taskbar for a notebook, the cluster that is currently attached is highlighted.](media/attach-cluster-to-notebook.png 'Attach cluster to notebook')
+
+8. Go to **Exercise 3** and open the **Notebook 01** (Create Databricks Tables from the Sample Datasets). Run the 2nd cell (Cmd 2). The Databricks notebooks creates two text fields on the top. Type **FlightDelaysWithAirportCodes** in the **"file_name"** field and **flight_delays_with_airport_codes** in the **"table_name"** field.
+
+9. Run each cell of this notebook individually by selecting within the cell, then entering **Ctrl+Enter** on your keyboard. Pay close attention to the instructions within the notebook, so you understand each step of the data preparation process.
+
+   ![In the Workspace screen, beneath BigDataVis the Exercise 2 folder is selected. Beneath Exercise 2, three notebooks are displayed 01 Data Preparation, 02 Train and Evaluate Models, and 03 Deploy as Web Service.](media/azure-databricks-exercise-2.png 'Exercise 3 folder')
+
+10. Repeat again on the same actions for the other csv files:
+   - For the FlightWeatherWithAirportCode.csv file, type **FlightWeatherWithAirportCode** in the in the **"file_name"** field and **flight_weather_with_airport_code** in the **"table_name"** field.
+   
+   - For the AirportCodeLocationLookupClean.csv file, type **AirportCodeLocationLookupClean** in the in the **"file_name"** field and **airport_code_location_lookup_clean** in the **"table_name"** field.
+ 
+
+11. Select **Data (1)** from the menu. Next, select **default (2)** under Databases (if this does not appear, start your cluster). You can see you created 3 new Tables on Datbricks workspace.
 
    ![From the Azure Databricks workspace, Data is selected from the menu, default database is selected from a list of available databases, the Create Table button is selected.](media/azure-databricks-create-tables.png 'Create new table')
 
-6. Select **Upload File (1)** under Create New Table, and then select either select or drag-and-drop the FlightDelaysWithAirportCodes.csv file into the file area **(2)**. Select **Create Table with UI (3)**.
+12. Select **Upload File (1)** under Create New Table, and then select either select or drag-and-drop the FlightDelaysWithAirportCodes.csv file into the file area **(2)**. Select **Create Table with UI (3)**.
 
    ![In the Create New Table form, the Upload File button is highlighted and the FlightDelaysWithAirportCodes.csv shows as uploaded. The Create Table with UI button is shown at the bottom of the form.](media/create-flight-delays-table-ui.png 'Create new table')
 
-7. Select your cluster **(1)** to preview the table, then select **Preview Table (2)**.
+13. Select your cluster **(1)** to preview the table, then select **Preview Table (2)**.
 
-8. Change the Table Name to `flight_delays_with_airport_codes` **(3)** and select the checkmark for **First row is header (4)**. Select **Create Table (5)**.
+14. Change the Table Name to `flight_delays_with_airport_codes` **(3)** and select the checkmark for **First row is header (4)**. Select **Create Table (5)**.
 
    ![The Specify Table Attributes form is displayed, flight_delays_with_airport_codes is highlighted in the Table Name field and the First row is header checkbox is checked. The Table Preview displays the Column Names and types along with a sampling of data.](media/flight-delays-attributes.png 'Rename table')
 
-9. Repeat steps 5 through 8 for the FlightWeatherWithAirportCode.csv and AirportCodeLocationLookupClean.csv files, setting the name for each dataset in a similar fashion:
+15. Repeat steps 5 through 8 for the FlightWeatherWithAirportCode.csv and AirportCodeLocationLookupClean.csv files, setting the name for each dataset in a similar fashion:
 
    - flightweatherwithairportcode_csv renamed to **flight_weather_with_airport_code**
    - airportcodelocationlookupclean_csv renamed to **airport_code_location_lookup_clean**
