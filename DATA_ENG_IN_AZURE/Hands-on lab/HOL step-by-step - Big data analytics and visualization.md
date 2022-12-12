@@ -32,10 +32,6 @@ Information in this document, including URL and other Internet Web site referenc
   - [Exercise 3: Work with Sample Data and Databricks Notebooks](#exercise-3-work-with-sample-data-and-databricks-notebooks)
     - [Task 1: Create Databricks Tables from the Sample Datasets](#task-1-create-databricks-tables-from-the-sample-datasets)
     - [Task 2: Open Azure Databricks and complete lab notebooks](#task-2-open-azure-databricks-and-complete-lab-notebooks)
-  - [Exercise 3: Setup Azure Data Factory](#exercise-3-setup-azure-data-factory)
-    - [Task 1: Download and stage data to be processed](#task-1-download-and-stage-data-to-be-processed)
-    - [Task 2: Install and configure Azure Data Factory Integration Runtime on your machine](#task-2-install-and-configure-azure-data-factory-integration-runtime-on-your-machine)
-    - [Task 3: Configure Azure Data Factory](#task-3-configure-azure-data-factory)
   - [Exercise 4: Develop a data factory pipeline for data movement](#exercise-4-develop-a-data-factory-pipeline-for-data-movement)
     - [Task 1: Create copy pipeline using the Copy Data Wizard](#task-1-create-copy-pipeline-using-the-copy-data-wizard)
   - [Exercise 5: Operationalize ML scoring with Azure Databricks and Data Factory](#exercise-5-operationalize-ml-scoring-with-azure-databricks-and-data-factory)
@@ -291,29 +287,15 @@ In this exercise, you will implement a classification experiment. You will load 
 
     ![On the File format settings page, the File Format is set to Text format, and the check box for Add header to file is selected. The Next button is selected.](media/adf-dataset-new-blob-configuration.png 'File format settings page')
 
-22. On the **Settings** screen, select **Skip incompatible rows (1)** under Fault tolerance, and uncheck **Enable logging (2)**. If present, keep **Data consistency verification** unchecked. Expand Advanced Settings and set Degree of copy parallelism to `10` **(3)**, then select **Next (4)**.
-   
-    ![In the Fault tolerance drop-down Skip incompatible rows is selected, and the Degree of copy parallelism is set to 10. The Next button is selected.](media/adf-copy-data-settings.png 'Settings page')
 
-23. Review settings on the **Summary** tab, but **DO NOT choose Next**.
+22. Review settings on the **Summary** tab, but **DO NOT choose Next**.
 
     ![The Summary page is displayed.](media/adf-copy-data-summary.png 'Summary page')
 
-24. Scroll down on the summary page until you see the **Copy Settings (1)** section. Select **Edit (2)** next to **Copy Settings**.
 
-    ![The Edit link is selected next to the Copy settings header.](media/adf-copy-data-review-page.png 'Summary page')
+23. After saving the Copy settings, select **Next (3)** on the Summary tab.
 
-25. Change the following Copy setting:
-
-    - **Retry (1)**: `3`
-
-    - Select **Save (2)**.
-
-      ![In the Copy settings form, the Retry textbox is set to 3, and the Save link is highlighted.](media/adf-copy-data-copy-settings.png 'Copy settings')
-
-26. After saving the Copy settings, select **Next (3)** on the Summary tab.
-
-27. On the **Deployment** screen, you will see a message that the deployment is in progress, and after a minute or two, the deployment is completed. Select **Edit Pipeline** to close out of the wizard and navigate to the pipeline editing blade.
+24. On the **Deployment** screen, you will see a message that the deployment is in progress, and after a minute or two, the deployment is completed. Select **Edit Pipeline** to close out of the wizard and navigate to the pipeline editing blade.
 
     ![The Deployment screen indicates the deployment is complete.](media/adf-copy-data-deployment.png 'Deployment page')
 
@@ -325,73 +307,45 @@ In this exercise, you will implement a classification experiment. You will load 
 
 1. Go to your Azure Storage account, and select "Containers" in the left menu.
 
-![The Storage account menu item - containers.](media/Storage-Containers-1.png 'Azure Storage account sparkcontainer')
+![The Storage account menu item - containers.](media/azportal-storage-containers-1.png 'Azure Storage account sparkcontainer')
 
-
+azportal-storage-containers-sparkcontainer-triage
 2. Go into **sparkcontainer** > **Triage**. 
 	Verify you have the following files:
    - FlightDelaysWithAirportCodes.csv
    - FlightWeatherWithAirportCode.csv
    - AirportCodeLocationLookupClean.csv
 
-3. Open your Azure Databricks workspace. Before continuing to the next step, verify that your new cluster is running. Do this by navigating to **Compute (1)** on the left-hand menu and ensuring that the state of your cluster is **Running (2)**.
-
-![The Clusters menu item is selected and the cluster is shown indicating that it is in the Running state.](media/azure-databricks-clusters-running.png 'Clusters')
+![The Triage folder into SparkContainer.](media/azportal-storage-containers-sparkcontainer-triage.png 'Azure Storage account sparkcontainer triage csv files')
 
 
-4. Within Azure Databricks, select **Workspace (1)** on the menu, then **Users (2)**, then select the down arrow next to your username **(3)**. Select **Import (4)**.
+3. Open your Azure Databricks workspace. Before continuing to the next step, verify that your new cluster is running. Do this by navigating to **Compute** on the left-hand menu and ensuring that the state of your cluster is **Running**.
 
-![In the left menu, the Workspace item is selected. Beneath the Workspaces pane, the Users item is selected. Beneath the Users pane, the current user is selected. The menu carat next to the username of the user is expanded with the Import item selected.](media/select-import-in-user-workspace.png 'Import')
+![The Clusters menu item is selected and the cluster is shown indicating that it is in the Running state.](media/adb-clusters-running.png 'Cluster Running')
 
 
-6. Within the Import Notebooks dialog, select Import from: **URL (1)**, then paste the following into the URL textbox **(2)**: https://github.com/microsoft/MTC_IL_WORKSHOP_Big_data_analytics_and_visualization/tree/main/DATA_ENG_IN_AZURE/Hands-on%20lab/lab-files/BigDataVis.dbc?raw=true . Select **Import (3)** to continue.
+4. Go to **Exercise 3** and open the **Notebook 01** (Create Databricks Tables from the Sample Datasets). Run the 2nd cell (Cmd 2). The Databricks notebook creates two text fields on the top.
 
-   ![The Import Notebooks dialog is shown that will allow the user to import notebooks via a file upload or URL.](media/import-notebooks.png 'Import from file')
+![Databricks notebook creates two text fields on the top.](media/adb-databricks-widgets.png 'Databricks Widgets')
 
-   > **Note:**  This Databricks archive is available within the `Hands-on lab\lab-files` directory of this repository.  In the `BigDataVis` subfolder, you can also see the individual notebooks as separate files in .ipynb format.
 
-7. After importing, expand the new **BigDataVis** folder.
+5. Type **FlightDelaysWithAirportCodes** in the **"file_name" field** and **flight_delays_with_airport_codes** in the **"table_name" field**. 
 
-   ![Workspace is open. The current user is selected. BigDataVis folder is highlighted.](media/adf-selecting-bigdatavis.png 'BigDataVis')
-
-   > **WARNING:** When you open a notebook, make sure you attach your cluster to the notebook using the **Attach to cluster** dropdown. You will need to do this for each notebook you open.
-   >
-   >
-
-![In the taskbar for a notebook, the cluster that is currently attached is highlighted.](media/attach-cluster-to-notebook.png 'Attach cluster to notebook')
-
-8. Go to **Exercise 3** and open the **Notebook 01** (Create Databricks Tables from the Sample Datasets). Run the 2nd cell (Cmd 2). The Databricks notebooks creates two text fields on the top. Type **FlightDelaysWithAirportCodes** in the **"file_name"** field and **flight_delays_with_airport_codes** in the **"table_name"** field.
-
-9. Run each cell of this notebook individually by selecting within the cell, then entering **Ctrl+Enter** on your keyboard. Pay close attention to the instructions within the notebook, so you understand each step of the data preparation process.
+6. Run remaining cells of this notebook individually by selecting within the cell, then entering **Ctrl+Enter** on your keyboard. Pay close attention to the instructions within the notebook, so you understand each step of the data preparation process.
 
    ![In the Workspace screen, beneath BigDataVis the Exercise 2 folder is selected. Beneath Exercise 2, three notebooks are displayed 01 Data Preparation, 02 Train and Evaluate Models, and 03 Deploy as Web Service.](media/azure-databricks-exercise-2.png 'Exercise 3 folder')
 
-10. Repeat again on the same actions for the other csv files:
+8. Repeat again on the same actions for the other csv files:
    - For the FlightWeatherWithAirportCode.csv file, type **FlightWeatherWithAirportCode** in the in the **"file_name"** field and **flight_weather_with_airport_code** in the **"table_name"** field.
    
    - For the AirportCodeLocationLookupClean.csv file, type **AirportCodeLocationLookupClean** in the in the **"file_name"** field and **airport_code_location_lookup_clean** in the **"table_name"** field.
  
 
-11. Select **Data (1)** from the menu. Next, select **default (2)** under Databases (if this does not appear, start your cluster). You can see you created 3 new Tables on Datbricks workspace.
+9. Select **Data (1)** from the menu. Next, select **default (2)** under Databases (if this does not appear, start your cluster). You can see you created 3 new Tables on Datbricks workspace.
 
    ![From the Azure Databricks workspace, Data is selected from the menu, default database is selected from a list of available databases, the Create Table button is selected.](media/azure-databricks-create-tables.png 'Create new table')
 
-12. Select **Upload File (1)** under Create New Table, and then select either select or drag-and-drop the FlightDelaysWithAirportCodes.csv file into the file area **(2)**. Select **Create Table with UI (3)**.
 
-   ![In the Create New Table form, the Upload File button is highlighted and the FlightDelaysWithAirportCodes.csv shows as uploaded. The Create Table with UI button is shown at the bottom of the form.](media/create-flight-delays-table-ui.png 'Create new table')
-
-13. Select your cluster **(1)** to preview the table, then select **Preview Table (2)**.
-
-14. Change the Table Name to `flight_delays_with_airport_codes` **(3)** and select the checkmark for **First row is header (4)**. Select **Create Table (5)**.
-
-   ![The Specify Table Attributes form is displayed, flight_delays_with_airport_codes is highlighted in the Table Name field and the First row is header checkbox is checked. The Table Preview displays the Column Names and types along with a sampling of data.](media/flight-delays-attributes.png 'Rename table')
-
-15. Repeat steps 5 through 8 for the FlightWeatherWithAirportCode.csv and AirportCodeLocationLookupClean.csv files, setting the name for each dataset in a similar fashion:
-
-   - flightweatherwithairportcode_csv renamed to **flight_weather_with_airport_code**
-   - airportcodelocationlookupclean_csv renamed to **airport_code_location_lookup_clean**
-
-   ![In the Data section, the default database is selected and the list of tables shows the three tables that were created based on the spreadsheet data.](media/uploaded-data-files.png 'Uploaded data files')
 
 ### Task 2: Open Azure Databricks and complete lab notebooks
 
@@ -399,7 +353,7 @@ In this exercise, you will implement a classification experiment. You will load 
 
    ![The Settings menu option is selected in Azure Databricks. User Settings is selected from the list of Account options.](media/databricks-select-user-settings.png 'Azure Databricks user account settings')
 
-2. Select **Generate New Token** under the Access Tokens tab. Enter **MCW lab** for the comment and leave the lifetime at 90 days. Select **Generate** to generate a Personal Access Token, or PAT.
+2. Select **Generate New Token** under the Access Tokens tab. Enter **MTC lab** for the comment and leave the lifetime at 90 days. Select **Generate** to generate a Personal Access Token, or PAT.
 
    ![The Generate New Token modal is shown with the previously specified values.](media/databricks-generate-new-token.png 'Generate New Token')
 
@@ -407,155 +361,13 @@ In this exercise, you will implement a classification experiment. You will load 
 
     ![The generated token is shown. The done button is highlighted.](media/databricks-copy-token.png 'Copy generated token')
 
-4. Within Azure Databricks, select **Data Science & Engineering** and choose **Machine Learning** from the list.  You will need to be in this view before completing one of the notebooks later in this exercise.
 
-   ![The Machine Learning view is selected.](media/databricks-machine-learning.png 'Machine Learning')
+4. Run each cell (except `Clean up` section in Notebook 3) of the notebooks located in the **Exercise 3** folder (02, 03, 04 and 05) individually by selecting within the cell, then entering **Ctrl+Enter** on your keyboard. Pay close attention to the instructions within the notebook, so you understand each step of the data preparation process.
 
-5. Within Azure Databricks, select **Workspace (1)** on the menu, then **Users (2)**, then select the down arrow next to your username **(3)**. Select **Import (4)**.
+   ![In the Workspace screen, beneath BigDataVis the Exercise 3 folder is selected. Beneath Exercise 3.](media/adb-exercise-3.png 'Exercise 2 folder')
 
-   ![In the left menu, the Workspace item is selected. Beneath the Workspaces pane, the Users item is selected. Beneath the Users pane, the current user is selected. The menu carat next to the username of the user is expanded with the Import item selected.](media/select-import-in-user-workspace.png 'Import')
+5. Do NOT run any notebooks within the Exercise 5 or 6 folders. They will be discussed later in the lab.
 
-6. Within the Import Notebooks dialog, select Import from: **URL (1)**, then paste the following into the URL textbox **(2)**: `https://github.com/microsoft/MCW-Big-data-analytics-and-visualization/blob/main/Hands-on%20lab/lab-files/BigDataVis.dbc?raw=true`. Select **Import (3)** to continue.
-
-   ![The Import Notebooks dialog is shown that will allow the user to import notebooks via a file upload or URL.](media/import-notebooks.png 'Import from file')
-
-   > **Note:**  This Databricks archive is available within the `Hands-on lab\lab-files` directory of this repository.  In the `BigDataVis` subfolder, you can also see the individual notebooks as separate files in .ipynb format.
-
-7. After importing, expand the new **BigDataVis** folder.
-
-   ![Workspace is open. The current user is selected. BigDataVis folder is highlighted.](media/adf-selecting-bigdatavis.png 'BigDataVis')
-
-   > **WARNING:** When you open a notebook, make sure you attach your cluster to the notebook using the **Attach to cluster** dropdown. You will need to do this for each notebook you open.
-   >
-   >![In the taskbar for a notebook, the cluster that is currently attached is highlighted.](media/attach-cluster-to-notebook.png 'Attach cluster to notebook')
-
-8. Run each cell (except `Clean up` section in Notebook 3) of the notebooks located in the **Exercise 2** folder (01, 02 and 03) individually by selecting within the cell, then entering **Ctrl+Enter** on your keyboard. Pay close attention to the instructions within the notebook, so you understand each step of the data preparation process.
-
-   ![In the Workspace screen, beneath BigDataVis the Exercise 2 folder is selected. Beneath Exercise 2, three notebooks are displayed 01 Data Preparation, 02 Train and Evaluate Models, and 03 Deploy as Web Service.](media/azure-databricks-exercise-2.png 'Exercise 2 folder')
-
-9. Do NOT run any notebooks within the Exercise 5 or 6 folders. They will be discussed later in the lab.
-
-## Exercise 3: Setup Azure Data Factory
-
-Duration: 20 minutes
-
-In this exercise, you will create a baseline environment for Azure Data Factory development to further operationalize data movement and processing. You will create a Data Factory service and then install the Data Management Gateway, which is the agent that facilitates data movement from on-premises to Microsoft Azure.
-
-### Task 1: Download and stage data to be processed
-
-1. Open a web browser.
-
-2. Download the AdventureWorks sample data from <http://bit.ly/2zi4Sqa>. If you are having trouble downloading the file, a zip file called FlightsAndWeather.zip is included in the lab-files folders.
-
-   >**Note**: If you are using the optional VM provisioned in the Before the HOL document, ensure that you download and extract the data on the VM.
-
-3. Extract it to a new folder called **C:\\Data**.
-
-### Task 2: Install and configure Azure Data Factory Integration Runtime on your machine
-
-1. To download the latest version of Azure Data Factory Integration Runtime, go to <https://www.microsoft.com/en-us/download/details.aspx?id=39717>.
-
-   >**Note**: If you are using the optional VM provisioned in the Before the HOL document, ensure that you install the IR on the VM.
-
-2. Select Download, then choose the download you want from the next screen.
-
-   ![Under Choose the download you want, the latest version MSI file is selected.](media/download-ir.png 'Choose the download you want section')
-
-3. Run the installer once downloaded.
-
-4. When you see the following screen, select Next.
-
-   ![The Welcome page in the Microsoft Integration Runtime Setup Wizard displays. A language drop-down list is shown, and the Next button is selected.](media/image114.png 'Microsoft Integration Runtime Setup Wizard')
-
-5. Check the box to accept the terms and select Next.
-
-   ![On the End-User License Agreement page, the check box to accept the license agreement is selected, as is the Next button.](media/image115.png 'End-User License Agreement page')
-
-6. Accept the default Destination Folder and select Next.
-
-   ![On the Destination folder page, the destination folder is set to C:\Program Files\Microsoft Integration Runtime\ and the Next button is selected.](media/image116.png 'Destination folder page')
-
-7. Choose Install to complete the installation.
-
-   ![On the Ready to install Microsoft Integration Runtime page, the Install button is selected.](media/image117.png 'Ready to install page')
-
-8. Select Finish once the installation has been completed.
-
-   ![On the Completed the Microsoft Integration Runtime Setup Wizard page, the Finish button is selected.](media/image118.png 'Completed the Wizard page')
-
-9. After selecting Finish, the following screen will appear. Keep it open for now. You will come back to this screen once the Data Factory in Azure has been provisioned and obtain the gateway key to connect Data Factory to this "on-premises" server.
-
-   ![The Microsoft Integration Runtime Configuration Manager, Register Integration Runtime dialog displays.](media/ir-self-hosted-registration-screen.png 'Register Integration Runtime page')
-
-### Task 3: Configure Azure Data Factory
-
-1. Launch a new browser window, and navigate to the Azure portal (<https://portal.azure.com>). Once prompted, log in with your Microsoft Azure credentials. If prompted, choose whether your account is an organization account or a Microsoft account. This will be based on which account was used to provision your Azure subscription used for this lab.
-
-2. From the side menu in the Azure portal, choose **Resource groups**, then enter your resource group name into the filter box, and select it from the list.
-
-3. Next, select your Azure Data Factory service from the list.
-
-   ![Azure Portal Resource Listing page is shown. Azure Data Factory resource is highlighted.](media/select-azure-datafactory.png 'Azure Data Factory')
-
-4. On the Data Factory Overview screen, select **Open Azure Data Factory Studio**.
-
-   ![In the Azure Data Factory resource screen, Overview is selected from the left menu. The Open Azure Data Factory Studio tile is selected.](media/adf-author-monitor.png 'Open Azure Data Factory Studio')
-
-5. A new page will open in another tab or new window. Within the Azure Data Factory site, select **Manage** on the menu.
-
-   ![In the left menu, the Manage icon is selected.](media/adf-home-manage-link.png 'Manage link on ADF home page')
-
-6. Now, select **Integration runtimes (1)** in the menu, then select **+ New (2)**.
-
-   ![The Integration runtimes menu item is selected, and the + New button is selected.](media/adf-new-ir.png 'Steps to create a new Integration Runtime connection')
-
-7. In the Integration Runtime Setup blade that appears, select **Azure, Self-Hosted (1)**, then select **Continue (2)**.
-
-   ![In the Integration runtime setup options, select Azure, Self-Hosted. Perform data flows, data movement, and dispatch activities to external compute.The Continue button is selected.](media/adf-ir-setup-1.png 'Integration Runtime Setup step 1')
-
-8. Select **Self-Hosted (1)** then select **Continue (2)**.
-
-   ![In the Network environment selected, Self-Hosted is selected, and the Continue button is highlighted.](media/adf-ir-setup-2.png 'Integration Runtime Setup step 2')
-
-9. Enter a **Name (1)**, such as bigdatagateway-\[initials\], and select **Create (2)**.
-
-   ![In the Integration runtime setup form, the Name textbox is populated with the value defined above.](media/adf-ir-setup-3.png 'Integration Runtime Setup step 3')
-
-10. Under Option 2: Manual setup, copy the Key1 authentication key value by selecting the Copy button, then select **Close**.
-
-    ![Beneath Option 2: Manual setup, the Key 1 textbox, and copy button are highlighted.](media/adf-ir-setup-4.png 'Integration Runtime Setup step 4')
-
-    > **WARNING**: Don't close the current screen or browser session.
-
-11. Paste the **Key1 (1)** value into the box in the middle of the Microsoft Integration Runtime Configuration Manager screen.
-
-    ![The Microsoft Integration Runtime Configuration Manager Register Integration Runtime page displays with the Key1 value pasted into the textbox. A green checkmark next to the textbox denotes it's a valid key.](media/adf-ir-vm-register.png 'Microsoft Integration Runtime Configuration Manager')
-
-12. Select **Register (2)**.
-
-13. It can take up to a minute or two to register. If it takes more than a couple of minutes, and the screen does not respond or returns an error message, close the screen by selecting the **Cancel** button.
-
-14. The following screen will be New Integration Runtime (Self-hosted) Node. Select **Finish**.
-
-    ![The Microsoft Integration Runtime Configuration Manager New Integration Runtime (Self-hosted) Node page displays with a Finish button.](media/adf-ir-self-hosted-node.png 'Microsoft Integration Runtime Configuration Manager')
-
-15. Depending on your version of the Integration Runtime, you will be asked to specify a backup file. Select **Skip** and **OK**.
-
-   ![The Integration Runtime Configuration Manager requests a backup credentials. Configuring backup settings is unncessary for this lab.](media/skip_ir_backup.png 'Skipping Integration Runtime backup settings')
-
-16. You will then get a screen with a confirmation message. Select the **Launch Configuration Manager** button to view the connection details.
-
-    ![The Microsoft Integration Runtime Configuration Manager Indicates the Integration Runtime (Self-hosted) node has been successfully registered. The Launch Configuration Manager button is highlighted.](media/adf-ir-launch-config-manager.png 'Microsoft Integration Runtime Configuration Manager')
-
-    ![The Microsoft Integration Runtime Configuration Manager indicates the Self-hosted note is connected to the cloud service.](media/adf-ir-config-manager.png 'Microsoft Integration Runtime Configuration Manager')
-
-17. You can now return to the Azure Data Factory page and view the Integration Runtime you just configured. You may need to select **Refresh** to view the Running status for the IR.
-
-    ![In the Connections tab in Azure Data Factory, the Integration runtimes tab is selected, and the integration runtime bigdatagateway-initials is shown in the list.](media/adf-ir-running.png 'Integration Runtime in running state')
-
-18. Select the Azure Data Factory Overview button on the menu. Leave this open for the next exercise.
-
-    ![The Azure Data Factory Overview button is selected from the left menu.](media/adf-overview.png 'ADF Overview')
 
 ## Exercise 4: Develop a data factory pipeline for data movement
 
