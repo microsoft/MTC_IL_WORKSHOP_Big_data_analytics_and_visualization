@@ -9,24 +9,16 @@ Hands-on lab step-by-step
 </div>
 
 <div class="MCWHeader3">
-November 2021
+November 2022
 </div>
 
 Information in this document, including URL and other Internet Web site references, is subject to change without notice. Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places, and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, e-mail address, logo, person, place or event is intended or should be inferred. Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.
-
-Microsoft may have patents, patent applications, trademarks, copyrights, or other intellectual property rights covering subject matter in this document. Except as expressly provided in any written license agreement from Microsoft, the furnishing of this document does not give you any license to these patents, trademarks, copyrights, or other intellectual property.
-
-The names of manufacturers, products, or URLs are provided for informational purposes only and Microsoft makes no representations and warranties, either expressed, implied, or statutory, regarding these manufacturers or the use of the products with any Microsoft technologies. The inclusion of a manufacturer or product does not imply endorsement of Microsoft of the manufacturer or product. Links may be provided to third party sites. Such sites are not under the control of Microsoft and Microsoft is not responsible for the contents of any linked site or any link contained in a linked site, or any changes or updates to such sites. Microsoft is not responsible for webcasting or any other form of transmission received from any linked site. Microsoft is providing these links to you only as a convenience, and the inclusion of any link does not imply endorsement of Microsoft of the site or the products contained therein.
-
-© 2021 Microsoft Corporation. All rights reserved.
-
-Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/intellectualproperty/Trademarks/Usage/General.aspx> are trademarks of the Microsoft group of companies. All other trademarks are property of their respective owners.
 
 **Contents**
 
 <!-- TOC -->
 
-- [Big data analytics and visualization hands-on lab step-by-step](#big-data-analytics-and-visualization-hands-on-lab-step-by-step)
+- [Data analytics and visualization hands-on lab step-by-step](#data-analytics-and-visualization-hands-on-lab-step-by-step)
   - [Abstract and learning objectives](#abstract-and-learning-objectives)
   - [Overview](#overview)
   - [Solution architecture](#solution-architecture)
@@ -64,7 +56,7 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
 
 <!-- /TOC -->
 
-# Big data analytics and visualization hands-on lab step-by-step
+# Data analytics and visualization hands-on lab step-by-step
 
 ## Abstract and learning objectives
 
@@ -86,17 +78,14 @@ Below is a diagram of the solution architecture you will build in this lab. Plea
 
 ## Requirements
 
-1. Microsoft Azure subscription must be pay-as-you-go or MSDN.
+1. Microsoft Azure subscription must be Pay-As-You-Go, MSDN, EA or CSP.
 
    - Trial subscriptions will not work.
 
-2. If you are not a Service Administrator or Co-administrator for the Azure subscription, or if you are running the lab in a hosted environment, you will need to install [Visual Studio 2019 Community](https://visualstudio.microsoft.com/downloads/) with the **ASP.NET and web development** and **Azure development** workloads.
+2. Follow all the steps provided in [Before the Hands-on Lab](Before%20the%20HOL%20-%20Big%20data%20analytics%20and%20visualization.md).
 
-3. Follow all the steps provided in [Before the Hands-on Lab](Before%20the%20HOL%20-%20Big%20data%20analytics%20and%20visualization.md).
 
 ## Exercise 1: Retrieve lab environment information and create Databricks cluster
-
-Duration: 10 minutes
 
 In this exercise, you will retrieve your Azure Storage account name and access key and your Azure Subscription Id and record the values to use later within the lab. You will also create a new Azure Databricks cluster.
 
@@ -118,6 +107,7 @@ You will need to have the Azure Storage account name and access key when you cre
 
    ![On the left menu, located in the Settings section, Access keys is selected. The copy button next to the Storage account name textbox is highlighted, as well as the copy button next to the key 1 key textbox.](media/azure-storage-access-keys.png 'Storage Access Keys')
 
+
 ### Task 2: Create an Azure Databricks cluster
 
 You have provisioned an Azure Databricks workspace, and now you need to create a new cluster within the workspace. Part of the cluster configuration includes setting up an account access key to your Azure Storage account using the Spark Config within the new cluster form. This will allow your cluster to access the lab files.
@@ -136,35 +126,27 @@ You have provisioned an Azure Databricks workspace, and now you need to create a
 
    ![The Azure Databricks Azure Active Directory Single Sign On dialog.](media/azure-databricks-aad.png 'Databricks Sign In')
 
-4. Select **Compute (1)** from the menu, then select **+ Create Cluster (2)** .
+4. Select **Compute** from the menu, then select **+ Create With Personal Compute** .
 
-   ![From the left menu, Clusters is selected. The + Create Cluster button is selected.](media/azure-databricks-create-cluster-button.png 'Databricks Clusters')
+   ![From the left menu, Clusters is selected. The + Create Cluster button is selected.](media/adb-create-cluster-button.png 'Databricks Clusters')
 
 5. On the New Cluster form, provide the following:
 
-   - **Cluster Name**: `lab`
+   - **Cluster Name**: `{user name}'s Personal Compute Cluster`
 
-   - **Cluster Mode**: **Standard**
+   - **Policy**: **Personal Compute**
+   
+   - **Single user access**: `{user name}`
 
-   - **Databricks Runtime Version**: **Runtime: 9.1 LTS ML (Scala 2.12, Spark 3.1.2)**
+   - **Databricks Runtime Version**: **Runtime: 11.3 LTS ML (Scala 2.12, Spark 3.3.0)**
+   
+   - **Node Type**: **Standard_DS3_v2**
 
    - **Enable Autoscaling**: **Uncheck** this option.
 
    - **Terminate after**: **Check** the box and enter `120`
 
-   - **Worker Type**: **Standard_F4**
-
-   - **Driver Type**: **Same as worker**
-
-   - **Workers**: `1`
-
-   - **Spark Config**: Expand **Advanced Options** and edit the Spark Config by entering the connection information for your Azure Storage account that you copied above in Task 1. This will allow your cluster to access the lab files. Enter the following:
-
-     `spark.hadoop.fs.azure.account.key.<STORAGE_ACCOUNT_NAME>.blob.core.windows.net <ACCESS_KEY>`, where <STORAGE_ACCOUNT_NAME> is your Azure Storage account name, and <ACCESS_KEY> is your storage access key.
-
-   **Example:** `spark.hadoop.fs.azure.account.key.bigdatalabstore.blob.core.windows.net HD+91Y77b+TezEu1lh9QXXU2Va6Cjg9bu0RRpb/KtBj8lWQa6jwyA0OGTDmSNVFr8iSlkytIFONEHLdl67Fgxg==`
-
-   ![The New Cluster form is populated with the values as outlined above.](media/azure-databricks-create-cluster-form.png 'Create Cluster')
+   ![The New Cluster form is populated with the values as outlined above.](media/adb-create-cluster-form-personal.png 'Create Cluster')
 
 6. Select **Create Cluster**.
 
@@ -172,12 +154,13 @@ You have provisioned an Azure Databricks workspace, and now you need to create a
 
 1. Within Azure Databricks, select **Data Science & Engineering**.
 
-   ![The Data Science & Engineering view is selected.](media/databricks-machine-learning.png 'Data Science & Engineering')
+   ![The Data Science & Engineering view is selected.](media/adb-data-science-engineerin.png 'Data Science & Engineering')
+
 
 2. Within Azure Databricks, select **Workspace (1)** on the menu, then **Users (2)**, then select the down arrow next to your username **(3)**. 
 	Select **Import (4)**.
 
-   ![In the left menu, the Workspace item is selected. Beneath the Workspaces pane, the Users item is selected. Beneath the Users pane, the current user is selected. The menu carat next to the username of the user is expanded with the Import item selected.](media/select-import-in-user-workspace.png 'Import')
+   ![In the left menu, the Workspace item is selected. Beneath the Workspaces pane, the Users item is selected. Beneath the Users pane, the current user is selected. The menu carat next to the username of the user is expanded with the Import item selected.](media/adb-select-import-in-user-workspace.png 'Import')
 
 4. Within the Import Notebooks dialog, select Import from: **URL (1)**, then paste the following into the URL textbox **(2)**: https://github.com/microsoft/MTC_IL_WORKSHOP_Big_data_analytics_and_visualization/tree/main/DATA_ENG_IN_AZURE/Hands-on%20lab/lab-files/BigDataVis.dbc?raw=true . Select **Import (3)** to continue.
 
@@ -191,11 +174,9 @@ You have provisioned an Azure Databricks workspace, and now you need to create a
 
    > **WARNING:** When you open a notebook, make sure you attach your cluster to the notebook using the **Connect** dropdown. You will need to do this for each notebook you open:
    >
-   >![In the taskbar for a notebook, the cluster that is currently attached is highlighted.](media/attach-cluster-to-notebook.png 'Attach cluster to notebook')
+   >![In the taskbar for a notebook, the cluster that is currently attached is highlighted.](media/adb-attach-cluster-to-notebook.png 'Connect')
 
 6. Run each cell of the notebook located in the **Exercise 1** folder (03 - Connect Data Lake to Databricks) individually by selecting within the cell, then entering **Ctrl+Enter** on your keyboard.
-
-   ![In the Workspace screen, beneath BigDataVis the Exercise 1 folder is selected. Beneath Exercise 1, one notebook is displayed 03 - Connect Data Lake to Databricks.](media/azure-databricks-exercise-1.png 'Exercise 1 folder')
 
 
 
