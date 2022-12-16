@@ -11,10 +11,10 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "databricksWorkspaceName": "[concat('mcw-bdv-databricks-', parameters('uniqueSuffix'))]",
+        "databricksWorkspaceName": "[concat('mtc-dav-databricks-', parameters('uniqueSuffix'))]",
         "blobStorageAccountName": "[concat('asastoremcw', parameters('uniqueSuffix'))]",
 		"dataFactoryName": "[concat('adfmcwdatafactory', parameters('uniqueSuffix'))]",
-        "managedResourceGroupName": "[concat('databricks-rg-', variables('databricksWorkspaceName'), '-', uniqueString(variables('databricksWorkspaceName'), resourceGroup().id))]",
+        "managedResourceGroupName": "[concat(variables('databricksWorkspaceName'), '-rg-', uniqueString(variables('databricksWorkspaceName'), resourceGroup().id))]",
         "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]"
     },
     "resources": [
