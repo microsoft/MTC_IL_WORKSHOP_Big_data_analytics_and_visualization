@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "http://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "uniqueSuffix": {
@@ -14,12 +14,12 @@
         "databricksWorkspaceName": "[concat('mtc-dav-databricks-', parameters('uniqueSuffix'))]",
         "blobStorageAccountName": "[concat('asastoremcw', parameters('uniqueSuffix'))]",
 		"dataFactoryName": "[concat('adfmcwdatafactory', parameters('uniqueSuffix'))]",
-        "managedResourceGroupName": "[concat(variables('databricksWorkspaceName'), '-rg-', uniqueString(variables('databricksWorkspaceName'), resourceGroup().id))]",
+        "managedResourceGroupName": "[concat('databricks-rg-', variables('databricksWorkspaceName'), '-', uniqueString(variables('databricksWorkspaceName'), resourceGroup().id))]",
         "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]"
     },
     "resources": [
         {
-            "apiVersion": "2018-04-01",
+            "apiVersion": "2022-10-01-preview",
             "location": "[variables('location')]",
             "name": "[variables('databricksWorkspaceName')]",
             "sku": {
@@ -35,7 +35,7 @@
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2022-05-01",
             "name": "[variables('blobStorageAccountName')]",
             "location": "[variables('location')]",
             "sku": {
@@ -59,7 +59,7 @@
         },
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2022-05-01",
             "name": "[concat(variables('blobStorageAccountName'), '/default/sparkcontainer')]",
             "dependsOn": [
 				"[resourceId('Microsoft.Storage/storageAccounts', variables('blobStorageAccountName'))]"
