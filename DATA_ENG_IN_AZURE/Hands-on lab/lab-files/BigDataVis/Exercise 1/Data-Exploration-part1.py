@@ -8,7 +8,7 @@
 
 spark.conf.set("fs.azure.account.auth.type.asastoremcw303474.dfs.core.windows.net", "SAS")
 spark.conf.set("fs.azure.sas.token.provider.type.asastoremcw303474.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.sas.FixedSASTokenProvider")
-spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "")
+spark.conf.set("fs.azure.sas.fixed.token.asastoremcw303474.dfs.core.windows.net", "?sv=2021-06-08&ss=b&srt=sco&sp=rwlacx&se=2022-12-06T12:02:10Z&st=2022-11-28T04:02:10Z&spr=https&sig=c8%2FOYNti7PrOTpEwk%2Fz1XpbJR4%2BHZ9lebrFPBz1gLDo%3D")
 
 # COMMAND ----------
 
@@ -108,7 +108,7 @@ display(df.select("Month").distinct().count())
 
 # COMMAND ----------
 
-# MAGIC %md Check the number of null values in DepDel15, this colimn states the departure delay of at least in 15 min.
+# MAGIC %md Check the number of null values in DepDel15, this colimn states the departure delay of at least      in 15 min.
 # MAGIC 
 # MAGIC If we want to use this field for delay prediction we should fix those records with null values. 
 
@@ -127,6 +127,14 @@ print (f"{percentage_nulls_in_DepDel15} % null values in DepDel15 column")
 # MAGIC Run dbutils.summarize for FlightWeatherWithAirportCode file
 # MAGIC 
 # MAGIC Check which columns have null values and must be fixed 
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 

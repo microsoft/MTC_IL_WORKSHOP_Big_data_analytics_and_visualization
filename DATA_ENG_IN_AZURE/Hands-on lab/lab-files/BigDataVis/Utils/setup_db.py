@@ -75,3 +75,13 @@ dbutils.fs.mount(
 
 print("Input data folder content:")
 dbutils.fs.ls(f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/")
+
+# COMMAND ----------
+
+dbutils.fs.ls('abfss://labs-303474@asastoremcw303474.dfs.core.windows.net/FlightsDelays/')
+
+# COMMAND ----------
+
+#return status initialization
+#return_value="INIT_OK"
+#dbutils.notebook.exit(str(return_value))
