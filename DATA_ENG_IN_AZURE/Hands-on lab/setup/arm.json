@@ -19,7 +19,7 @@
     },
     "resources": [
         {
-            "apiVersion": "2022-10-01-preview",
+            "apiVersion": "2022-04-01-preview",
             "location": "[variables('location')]",
             "name": "[variables('databricksWorkspaceName')]",
             "sku": {
