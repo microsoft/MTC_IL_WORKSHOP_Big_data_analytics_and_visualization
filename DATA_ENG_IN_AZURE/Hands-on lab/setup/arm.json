@@ -12,7 +12,7 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "databricksWorkspaceName": "[concat('mtc-dav-databricks-', parameters('uniqueSuffix'))]",
-        "blobStorageAccountName": "[concat('asastoremcw', parameters('uniqueSuffix'))]",
+        "blobStorageAccountName": "[concat('samtcdavstrauss', parameters('uniqueSuffix'))]",
 		"dataFactoryName": "[concat('adfmcwdatafactory', parameters('uniqueSuffix'))]",
         "managedResourceGroupName": "[concat('databricks-rg-', variables('databricksWorkspaceName'), '-', uniqueString(variables('databricksWorkspaceName'), resourceGroup().id))]",
         "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]"
