@@ -230,7 +230,7 @@ In this exercise, you will implement a classification experiment. You will load 
 
    - **Name (1)**: `Copy_Raw_Data_From_OnPremServer`
 
-   - **Host (3)**: **\\sflightsandweatherfiles.file.core.windows.net\flightsandweather**
+   - **Host (3)**: **`\\sflightsandweatherfiles.file.core.windows.net\flightsandweather`**
 
    - **User name (4)**: sflightsandweatherfiles
 
