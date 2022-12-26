@@ -12,8 +12,8 @@
     "variables": {
         "location": "[resourceGroup().location]",
         "databricksWorkspaceName": "[concat('mtc-dav-databricks-', parameters('uniqueSuffix'))]",
-        "blobStorageAccountName": "[concat('samtcdavstrauss', parameters('uniqueSuffix'))]",
-		"dataFactoryName": "[concat('adfmcwdatafactory', parameters('uniqueSuffix'))]",
+        "blobStorageAccountName": "[concat('samtcdavmaccabi', parameters('uniqueSuffix'))]",
+		"dataFactoryName": "[concat('adfmtcdatafactory', parameters('uniqueSuffix'))]",
         "managedResourceGroupName": "[concat('databricks-rg-', variables('databricksWorkspaceName'), '-', uniqueString(variables('databricksWorkspaceName'), resourceGroup().id))]",
         "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]"
     },
@@ -39,7 +39,7 @@
             "name": "[variables('blobStorageAccountName')]",
             "location": "[variables('location')]",
             "sku": {
-                "name": "Standard_RAGRS"
+                "name": "Standard_LRS"
             },
             "kind": "StorageV2",
             "properties": {
