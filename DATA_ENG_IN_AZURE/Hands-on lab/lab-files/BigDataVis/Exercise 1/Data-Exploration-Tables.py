@@ -154,20 +154,9 @@ display(df)
 
 # COMMAND ----------
 
-#check in which columns missing values
-missing_values = df.select([count(when(isnan(c) | col(c).isNull(), c)).alias(c) for c in df.columns])
-display(missing_values)
-
-# COMMAND ----------
-
-#check percentage of missing values for our target field: DepDel15
 from pyspark.sql.functions import col
 percentage_nulls_in_DepDel15 = df.filter(col("DepDel15").isNull() ).count() / df.count() * 100
-print (f"{percentage_nulls_in_DepDel15} % null values in DepDel15 column") 
-
-# COMMAND ----------
-
-
+print (f"{percentage_nulls_in_DepDel15} % null values in DepDel15 column")       
 
 # COMMAND ----------
 
