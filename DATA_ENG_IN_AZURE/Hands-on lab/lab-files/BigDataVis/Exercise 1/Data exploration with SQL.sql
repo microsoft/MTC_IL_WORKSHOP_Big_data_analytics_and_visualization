@@ -33,7 +33,7 @@
 -- MAGIC %python
 -- MAGIC spark.conf.set(f"fs.azure.account.auth.type.{storage_account}.dfs.core.windows.net", "SAS")
 -- MAGIC spark.conf.set(f"fs.azure.sas.token.provider.type.{storage_account}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.sas.FixedSASTokenProvider")
--- MAGIC spark.conf.set(f"fs.azure.sas.fixed.token.{storage_account}.dfs.core.windows.net", "sp=rcwl&st=2023-02-01T13:26:50Z&se=2023-02-09T21:26:50Z&spr=https&sv=2021-06-08&sr=c&sig=kbeOKfKAAsROFKJqVXKjkZyKltzy5VyBKM2Hf%2FoQvB4%3D")
+-- MAGIC spark.conf.set(f"fs.azure.sas.fixed.token.{storage_account}.dfs.core.windows.net", "")
 
 -- COMMAND ----------
 
@@ -367,6 +367,22 @@ describe extended flights_delays_managed_delta_303474
 
 -- MAGIC %sql create
 -- MAGIC or replace table flights_delays_303474 as
+-- MAGIC select
+-- MAGIC   *
+-- MAGIC from
+-- MAGIC   flights_delays_temp_view_303474
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC You can create a final table in the specific location by using ***options ('path' 'abfss://${container_name}@${storage_account}.dfs.core.windows.net/new table location/')***
+
+-- COMMAND ----------
+
+-- MAGIC %sql create
+-- MAGIC or replace table flights_delays_with_path_option_303474
+-- MAGIC using delta options('path' 'abfss://${container_name}@${storage_account}.dfs.core.windows.net/FlightsDelays/bronze/tableName/')
+-- MAGIC as
 -- MAGIC select
 -- MAGIC   *
 -- MAGIC from
